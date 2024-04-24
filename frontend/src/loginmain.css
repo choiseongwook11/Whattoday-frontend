@@ -59,7 +59,7 @@ a:hover {
 /* section */
 
 .main-box {
-    height: 870px;
+    height: 1080px;
     width: 100%;
     position: fixed;
     background-image: url(./asset/background.png);
@@ -83,11 +83,15 @@ a:hover {
 .back-text {
     margin: 10px -60px;
     color: #000000;
-    font-size: 30px;
+    font-size: 50px;
     align-items: center;
     display: flex;
+    transition: 0.4s;
 }
 
+.back-text:hover {
+  transform: translate(-8px, 0px);;
+}
 
 .main-login-text-box-left::before {
     content: '';
