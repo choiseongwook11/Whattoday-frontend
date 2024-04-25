@@ -23,6 +23,7 @@ const SocialLogin = () => {
           .then((userCred) => {
             const google_user = userCred.user;
             setGoogleUser(google_user);
+            sessionStorage.setItem('googlelogincheck', google_user)
             sessionStorage.setItem('googleUserPhotoURL', google_user.photoURL);
             sessionStorage.setItem('googleUseremail', google_user.email);
             navigate('/mainlin');
@@ -39,6 +40,7 @@ const SocialLogin = () => {
       .then((userCred) => {
         const github_user = userCred.user;
         setGithubUser(github_user);
+        sessionStorage.setItem('githublogincheck', github_user)
         sessionStorage.setItem('githubUserPhotoURL', github_user.photoURL);
         sessionStorage.setItem('githubUseremail', github_user.email);
         navigate('/mainlin');

@@ -48,6 +48,22 @@ function Cal() {
                       지방기능경기대회
                     </div>
                   </div>
+                  <div className={styles['cal-school-schedule2']}>
+                    <div className={styles['cal-school-schedule-date']}>
+                      4.2 ~ 4
+                    </div>
+                    <div className={styles['cal-school-schedule-name']}>
+                      중학교 영어듣기
+                    </div>
+                  </div>
+                  <div className={styles['cal-school-schedule3']}>
+                    <div className={styles['cal-school-schedule-date']}>
+                      4.9 ~ 12
+                    </div>
+                    <div className={styles['cal-school-schedule-name']}>
+                      고등학교 영어듣기
+                    </div>
+                  </div>
               </div>
             </section>
           </div>

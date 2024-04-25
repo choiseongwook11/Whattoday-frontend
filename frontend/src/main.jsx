@@ -4,7 +4,9 @@ import styles from './main.module.css';
 function Main() {
     const navigate = useNavigate()
 
-    
+    const googlelogincheck = sessionStorage.getItem('googlelogincheck')
+    console.log(googlelogincheck)
+    const githublogincheck = sessionStorage.getItem('githublogincheck')
     
     return (
         <div>
@@ -12,7 +14,7 @@ function Main() {
                 <div className={styles['head-box']}>
                     <div className={styles['head-text']}><div className={styles['head-text-img']}></div><a href="/" className={styles.click}>오늘 뭐해?</a></div>
                     <div className={styles['header-right-text-box']}>
-                        <div className={styles['header-right-text']} onClick={() => navigate("/loginmain")}><div className={styles.click}>로그인</div></div>
+                        <div className={styles['header-right-text']} onClick={googlelogincheck == null && githublogincheck == null ? () => navigate("/loginmain") : () => navigate("/mainlin") }><div className={styles.click}>로그인</div></div>
                     </div>
                 </div>
             </header>
@@ -22,8 +24,8 @@ function Main() {
                         <div className={styles['main-text-ani']}>어서오세요!</div>
                         <div className={styles['main-text-ani']}>저희 사이트에서 여러분들만의 캘린더를 만들어보세요!</div>
                         <div className={styles['cal-button']}>
-                            <div className={styles['cal-text']}>
-                                <div onClick={() => navigate("/login")}><div className={styles.click}>캘린더로 이동</div></div>
+                            <div className={styles['cal-text']} onClick={googlelogincheck == null && githublogincheck == null ? () => navigate("/loginmain") : () => navigate("/cal")}>
+                                <div><div className={styles.click}>캘린더로 이동</div></div>
                             </div>
                         </div>
                     </div>
@@ -35,7 +37,7 @@ function Main() {
             <section className={styles.all}>
                 <div className={styles["sub-main"]}>
                     <ul className={styles["sc-list"]}>
-                        <li className={styles["li-cal"]}>
+                        <li className={styles["li-cal"]} onClick={googlelogincheck == null && githublogincheck == null ? () => navigate("/loginmain") : () => navigate("/cal")}>
                             <div className={styles["li-cal-text-box"]}>
                                 <div className={styles["li-cal-title"]}>
                                     캘린더

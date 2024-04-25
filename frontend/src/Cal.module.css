@@ -199,6 +199,26 @@ transform: translate(0, -2px);
   left: 40px;
 }
 
+.cal-school-schedule2 {
+  width: 340px;
+  height: 111px;
+  border-radius: 20px;
+  background-color:  #FAFAFA;
+  position: relative;
+  top: 112px;
+  left: 40px;
+}
+
+.cal-school-schedule3 {
+  width: 340px;
+  height: 111px;
+  border-radius: 20px;
+  background-color:  #FAFAFA;
+  position: relative;
+  top: 136px;
+  left: 40px;
+}
+
 .cal-school-schedule-date {
   font-family: 'Freesentation-3light', sans-serif;
   font-size: 24px;
