@@ -1,0 +1,218 @@
+/* 폰트 */
+
+@font-face {
+  font-family: 'SUITE-Regular';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2304-2@1.0/SUITE-Regular.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+}
+
+.all {
+  font-family: 'Freesentation-6SemiBold', sans-serif;
+}
+
+@font-face {
+  font-family: 'SUITE-Bold';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2304-2@1.0/SUITE-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Freesentation-3Light';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-3Light.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Freesentation-5Medium';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-5Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Freesentation-6SemiBold';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-6SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Freesentation-8ExtraBold';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-8ExtraBold.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Freesentation-9Black';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-9Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+}
+
+/* a태그 */
+
+a {
+  all: unset;
+}
+
+.click {
+  cursor: pointer;
+}
+
+.profile-image {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+
+.profile-box {
+width: 50px;
+height: 50px; 
+border-radius: 70%;
+overflow: hidden;
+}
+
+a:link,
+a:visited,
+a:active,
+a:hover {
+  text-decoration: none;
+}
+
+/* header */
+
+.head-box {
+  width: 100%;
+  height: 70px;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #CECECE;
+}
+
+.head-text {
+  margin: 0 2%;
+  color: #0057FF;
+  font-size: 22px;
+  align-items: center;
+  display: flex;
+}
+
+.head-text-img {
+  background-image: url(./asset/logo3.png);
+  background-size: cover;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  width: 50px;
+  height: 50px;
+}
+
+.header-right-text-box {
+margin-right: 80px;
+top: 0;
+right: 0;
+display: flex;
+align-items: center;
+justify-content: flex-end;
+position: absolute;
+height: 70px;
+}
+
+.header-right-text {
+margin-right: 55px;
+font-size: 22px;
+align-items: center;
+display: flex;
+color: #0057FF;
+transition: 0.4s;
+}
+
+.header-right-profile {
+margin-right: 35px;
+align-items: center;
+display: flex;
+color: #ffffff;
+position: relative
+}
+
+.header-right-image-box {
+top: 0;
+right: 0;
+display: flex;
+align-items: center;
+justify-content: flex-end;
+position: absolute;
+height: 70px;
+}
+
+.header-right-text:hover {
+transform: translate(0, -2px);
+
+}
+
+/* section */
+.cal-schedule {
+  width: 413px;
+  height: 1234px;
+}
+
+.cal-mon-schedule {
+  font-family: 'Freesentation-9Black', sans-serif;
+  font-size: 36px;
+  position: relative;
+  top: 35px;
+  left: 33px;
+  width: 199px;
+  height: 44px;
+}
+
+.cal-school-schedule-text {
+  font-family: 'Freesentation-3light', sans-serif;
+  font-size: 25px;
+  position: relative;
+  top: 68px;
+  left: 33px;
+  width: 74px;
+  height: 24px;
+}
+
+.cal-school-schedule-bar {
+  background-color: #7F7F7F;
+  width: 354.5px;
+  height: 1px;
+  position: relative;
+  top: 73px;
+  left: 33px;
+}
+
+.cal-school-schedule {
+  width: 340px;
+  height: 111px;
+  border-radius: 20px;
+  background-color:  #FAFAFA;
+  position: relative;
+  top: 88px;
+  left: 40px;
+}
+
+.cal-school-schedule-date {
+  font-family: 'Freesentation-3light', sans-serif;
+  font-size: 24px;
+  position: relative;
+  color: #494949;
+  top: 22px;
+  left: 24px;
+}
+
+.cal-school-schedule-name {
+  font-family: 'Freesentation-3light', sans-serif;
+  font-size: 24px;
+  position: relative;
+  color: #494949;
+  top: 27px;
+  left: 24px;
+}

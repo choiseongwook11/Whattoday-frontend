@@ -1,18 +1,25 @@
 import React, { useState } from 'react';
 import styles from './MyPage.module.css';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from './userContext';
 import null_image from './asset/no-image.svg'
+import { getAuth } from 'firebase/auth';
 
 const MyPage = () => {
     const navigate = useNavigate();
 
-    const { google_user, github_user } = useUser();
+    const githubUserPhotoURL = sessionStorage.getItem('githubUserPhotoURL');
+    const googleUserPhotoURL = sessionStorage.getItem('googleUserPhotoURL');
 
     const [showDropdown, setShowDropdown] = useState(false);
 
+    const handleLogout = () => {
+      sessionStorage.clear();
+      getAuth().signOut();
+      navigate('/');
+    };
+
     return (
-        <body>
+        <div>
             <header className={styles.all}>
                 <div className={styles['head-box']}>
                     <div className={styles['head-text']}>
@@ -28,7 +35,7 @@ const MyPage = () => {
                 <div className={styles['header-right-image-box']}>
                   <div className={styles['header-right-profile']} onClick={() => setShowDropdown(!showDropdown)}><div className={styles.click}>
                         <div className={styles['profile-box']}>
-                          <img className={styles['profile-image']} src={google_user?.photoURL == null && github_user?.photoURL == null ? null_image : google_user?.photoURL || github_user?.photoURL} alt='profile_image'></img>
+                          <img className={styles['profile-image']} src={googleUserPhotoURL == null && githubUserPhotoURL == null ? null_image : googleUserPhotoURL || githubUserPhotoURL} alt='profile_image'></img>
                         </div>
                       </div>
                     </div>
@@ -42,13 +49,13 @@ const MyPage = () => {
                         <div class={styles["profile-menu-item"]} onClick={() => navigate('/MyPage')}>
                             프로필 보기
                         </div>
-                        <div class={styles["profile-menu-item"]} onClick={() => navigate('/')}>
+                        <div class={styles["profile-menu-item"]} onClick={handleLogout}>
                             로그아웃
                         </div>
                       </div>
                   )}
                       <div className={styles['main-profile-box']}>
-                        <img className={styles['main-profile-image']} src={google_user?.photoURL == null && github_user?.photoURL == null ? null_image : google_user?.photoURL || github_user?.photoURL} alt='profile_image'></img>
+                        <img className={styles['main-profile-image']} src={googleUserPhotoURL == null && githubUserPhotoURL == null ? null_image : googleUserPhotoURL || githubUserPhotoURL} alt='profile_image'></img>
                       </div>
                       <div className={styles['main-profile-name']}>
                           최현우<span>님</span>
@@ -64,9 +71,8 @@ const MyPage = () => {
                       </div>
                   </div>
                 </div>
-                
             </section>
-        </body>
+        </div>
     );
 }
 

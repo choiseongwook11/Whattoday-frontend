@@ -9,29 +9,29 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 const GithubLogin = () => {
-  const navigate = useNavigate();
+const navigate = useNavigate();
 
-  const { setGithubUser } = useUser();
+const { setGithubUser } = useUser();
 
-  const loginWithGithub = () => {
-    const provider = new GithubAuthProvider();
-    signInWithPopup(auth, provider)
-      .then((userCred) => {
-        const github_user = userCred.user;
-        console.log(github_user.email);
-        setGithubUser(github_user);
-        navigate('/mainlin');
-      })
-      .catch((error) => {
-        console.error("Login failed:", error);
-      });
-  };
+const loginWithGithub = () => {
+const provider = new GithubAuthProvider();
+signInWithPopup(auth, provider)
+.then((userCred) => {
+const github_user = userCred.user;
+console.log(github_user.email);
+setGithubUser(github_user);
+navigate('/mainlin');
+})
+.catch((error) => {
+console.error("Login failed:", error);
+});
+};
 
-  return (
-    <div className="github-logo" onClick={loginWithGithub}>
-      <div className="logo-text"><div className="click">Github</div></div>
-    </div>
-  );
+return (
+<div className="github-logo" onClick={loginWithGithub}>
+<div className="logo-text"><div className="click">Github</div></div>
+</div>
+);
 };
 
 export default GithubLogin;

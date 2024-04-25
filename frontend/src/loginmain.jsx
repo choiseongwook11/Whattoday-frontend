@@ -1,11 +1,10 @@
 import React from 'react';
 import './loginmain.css';
-import GithubLogin from './githublogin';
-import GoogleLogin from './googlelogin';
+import SocialLogin from './login';
+
 
 function LoginMain() {
   return (
-    <body>
       <section className="all">
         <div className="main-box">
           <div className="main-login-box">
@@ -18,14 +17,10 @@ function LoginMain() {
                 로그인해서 저희 서비스를 이용해보세요
               </div>
             </div>
-            <div className="main-login-text-box-right">
-              <GoogleLogin />
-              <GithubLogin />
-            </div>
+              <SocialLogin />
           </div>
         </div>
       </section>
-    </body>
   );
 }
 

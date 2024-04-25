@@ -4,7 +4,7 @@ import Mainlin from "./mainlin"
 import LoginMain from "./loginmain"
 import MyPage from "./MyPage"
 import MyPageEdit from "./MyPageEdit"
-
+import Cal from "./Cal"
 
 const App = () => {
     return(
@@ -15,6 +15,7 @@ const App = () => {
         <Route path="/loginmain" element={<LoginMain />}/>
         <Route path="/MyPage" element={<MyPage />}/>
         <Route path="/MyPageEdit" element={<MyPageEdit />}/>
+        <Route path="/Cal" element={<Cal />}/>
         </Routes>
         </BrowserRouter>
     )

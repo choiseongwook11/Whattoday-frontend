@@ -3,12 +3,15 @@ import styles from './main.module.css';
 
 function Main() {
     const navigate = useNavigate()
+
+    
+    
     return (
-        <body>
+        <div>
             <header className={styles.all}>
                 <div className={styles['head-box']}>
                     <div className={styles['head-text']}><div className={styles['head-text-img']}></div><a href="/" className={styles.click}>오늘 뭐해?</a></div>
-                    <div class={styles['header-right-text-box']}>
+                    <div className={styles['header-right-text-box']}>
                         <div className={styles['header-right-text']} onClick={() => navigate("/loginmain")}><div className={styles.click}>로그인</div></div>
                     </div>
                 </div>
@@ -24,14 +27,14 @@ function Main() {
                             </div>
                         </div>
                     </div>
-                    <div class={styles["main-icon"]}>
-                        <div class={styles["img-icon"]}></div>
+                    <div className={styles["main-icon"]}>
+                        <div className={styles["img-icon"]}></div>
                     </div>
                 </div>
             </section>
             <section className={styles.all}>
                 <div className={styles["sub-main"]}>
-                    <ul class={styles["sc-list"]}>
+                    <ul className={styles["sc-list"]}>
                         <li className={styles["li-cal"]}>
                             <div className={styles["li-cal-text-box"]}>
                                 <div className={styles["li-cal-title"]}>
@@ -71,13 +74,13 @@ function Main() {
             </section>
             <footer>
                 <div className={styles["footer-main"]}>
-                    <div class={styles["footer-text"]}>
+                    <div className={styles["footer-text"]}>
                         <p>copyright all rights reserved.</p>
                     </div>
 
                 </div>
             </footer>
-        </body>
+        </div>
     );
 }
 
