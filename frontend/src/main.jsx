@@ -5,7 +5,6 @@ function Main() {
     const navigate = useNavigate()
 
     const googlelogincheck = sessionStorage.getItem('googlelogincheck')
-    console.log(googlelogincheck)
     const githublogincheck = sessionStorage.getItem('githublogincheck')
     
     return (

@@ -4,7 +4,7 @@ import Mainlin from "./mainlin"
 import LoginMain from "./loginmain"
 import MyPage from "./MyPage"
 import MyPageEdit from "./MyPageEdit"
-import Cal from "./Cal"
+import Cal from "./cal"
 
 const App = () => {
     return(
