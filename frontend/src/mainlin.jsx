@@ -26,15 +26,7 @@ function Mainlin() {
                 <div className={styles['head-box']}>
                     <div className={styles['head-text']}><div className={styles['head-text-img']}></div><a href="/mainlin" className="click">오늘 뭐해?</a></div>
                       <div className={styles['header-right-text-box']}>
-                          <div className={styles['header-right-text']} onClick={() => {
-                                        // npm i axios | yarn add axios
-                                        axios.get("http://localhost:3001/api")
-                                            .then((res) => {
-                                                console.log(res);
-                                                navigate("/Cal")
-                                            }).catch((err) => {
-                                                console.log(err);
-                                            })}}><div className={styles.click}>캘린더</div></div>
+                          <div className={styles['header-right-text']} onClick={() => navigate("/Cal")}><div className={styles.click}>캘린더</div></div>
                           <div className={styles['header-right-text']} onClick={() => navigate("/login")}><div className={styles.click}>급식표</div></div>
                           <div className={styles['header-right-text']} onClick={() => navigate("/login")}><div className={styles.click}>시간표</div></div>
                       </div>
@@ -63,15 +55,7 @@ function Mainlin() {
                     <div className={styles['main-text']}>
                         <div className={styles['main-text-ani']}>어서오세요!</div>
                         <div className={styles['main-text-ani']}>저희 사이트에서 여러분들만의 캘린더를 만들어보세요!</div>
-                        <div className={styles['cal-button']} onClick={() => {
-                                        // npm i axios | yarn add axios
-                                        axios.get("http://localhost:3001/api")
-                                            .then((res) => {
-                                                console.log(res);
-                                                navigate("/Cal")
-                                            }).catch((err) => {
-                                                console.log(err);
-                                            })}}>
+                        <div className={styles['cal-button']} onClick={() => navigate("/Cal")}>
                             <div className={styles['cal-text']}>
                                 <div>캘린더로 이동</div>
                             </div>

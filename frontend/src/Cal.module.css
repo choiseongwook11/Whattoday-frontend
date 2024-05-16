@@ -155,6 +155,26 @@ transform: translate(0, -2px);
 }
 
 /* section */
+.profile-menu {
+  width: 104px;
+  height: 71px;
+  background-color: #FFA114;
+  z-index: 2;
+  border-radius: 5px;
+  left: 50px;
+  top: 60px;
+  position:relative;
+  justify-content: center;
+}
+
+.profile-menu-item {
+  line-height: 35px;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  cursor: pointer;
+}
+
 .cal-schedule {
   width: 400px;
   height: 1234px;
@@ -455,7 +475,7 @@ transform: translate(0, -2px);
   height: 38px;
   border-radius: 10px;
   position: absolute;
-  z-index: 1;
+  z-index: 0;
 }
 
 
@@ -476,7 +496,7 @@ transform: translate(0, -2px);
   height: 38px;
   border-radius: 10px;
   position: absolute;
-  z-index: 1;
+  z-index: 0;
 }
 
 .schoolscheduleText {

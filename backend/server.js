@@ -26,7 +26,7 @@ app.listen(PORT, () => {
     console.log(`server running on port ${PORT}`);
 });
 
-app.get("/api", (req, res) => {
+app.get("/data", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
   const sqlQuery = "SELECT * FROM school_schedule.school_schedule_data;";
 

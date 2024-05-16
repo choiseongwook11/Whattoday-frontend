@@ -6,6 +6,8 @@ import null_image from './asset/logo.png';
 import Calendar from './caljs'
 import axios from 'axios';
 import { useCal } from './calContext';
+import { getAuth } from 'firebase/auth';
+import CalModal from './CalModal';
 
 function Cal() {
     const navigate = useNavigate();
@@ -15,6 +17,18 @@ function Cal() {
     const { google_user, github_user } = useUser();
 
     const [showDropdown, setShowDropdown] = useState(false);
+
+    const [isOpen, setOpen] = useState(false);
+
+    const handleLogout = () => {
+      sessionStorage.clear();
+      getAuth().signOut();
+      navigate('/');
+    };
+
+    const handleClick = () => {
+      setOpen(true);
+    };
     
     return (
         <div>
@@ -24,7 +38,7 @@ function Cal() {
                       <div className={styles['header-right-text-box']}>
                           <div className={styles['header-right-text']} onClick={() => {
                                         // npm i axios | yarn add axios
-                                        axios.get("http://localhost:3001/api")
+                                        axios.get("http://localhost:3001/data")
                                             .then((res) => {
                                                 console.log(res);
                                                 navigate("/Cal")
@@ -36,6 +50,16 @@ function Cal() {
                       </div>
                   </div>
                   <div className={styles['header-right-image-box']}>
+                  {showDropdown &&(
+                  <div className={styles['profile-menu']}>
+                        <div className={styles["profile-menu-item"]} onClick={() => navigate('/MyPage')}>
+                            프로필 보기
+                        </div>
+                        <div className={styles["profile-menu-item"]} onClick={handleLogout}>
+                              로그아웃
+                        </div>
+                      </div>  
+                    )}
                     <div className={styles['header-right-profile']} onClick={() => setShowDropdown(!showDropdown)}><div className={styles.click}>
                           <div className={styles['profile-box']}>
                             <img className={styles['profile-image']} src={google_user?.photoURL == null && github_user?.photoURL == null ? null_image : google_user?.photoURL || github_user?.photoURL} alt='profile_image'></img>
@@ -99,8 +123,9 @@ function Cal() {
                   </div>
               </div>
               <div className={styles['cal-background']}>
-                <div className={styles['cal-add-button']}>
+                <div className={styles['cal-add-button']} onClick={handleClick}>
                   일정 추가
+                  <CalModal isOpen={isOpen} />
                 </div>
                   <div className={styles.weekdays}>
                     <div className={styles.day}><span className={styles.sun}>일</span></div>
