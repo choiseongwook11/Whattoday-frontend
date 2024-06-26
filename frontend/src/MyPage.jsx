@@ -10,6 +10,9 @@ const MyPage = () => {
     const githubUserPhotoURL = sessionStorage.getItem('githubUserPhotoURL');
     const googleUserPhotoURL = sessionStorage.getItem('googleUserPhotoURL');
 
+    const googleUsername = sessionStorage.getItem('googleUsername')
+    const githubUsername = sessionStorage.getItem('githubUsername')
+
     const [showDropdown, setShowDropdown] = useState(false);
 
     const handleLogout = () => {
@@ -27,9 +30,9 @@ const MyPage = () => {
                     <a href="/mainlin" className={styles.click}>오늘 뭐해?</a>
                 </div>
                     <div className={styles['header-right-text-box']}>
-                        <div className={styles['header-right-text']} onClick={() => navigate("/login")}><div className={styles.click}>캘린더</div></div>
-                        <div className={styles['header-right-text']} onClick={() => navigate("/login")}><div className={styles.click}>급식표</div></div>
-                        <div className={styles['header-right-text']} onClick={() => navigate("/login")}><div className={styles.click}>시간표</div></div>
+                        <div className={styles['header-right-text']} onClick={() => navigate("/Cal")}><div className={styles.click}>캘린더</div></div>
+                        <div className={styles['header-right-text']} onClick={() => navigate("/Eat")}><div className={styles.click}>급식표</div></div>
+                        <div className={styles['header-right-text']} onClick={() => navigate("/Schedule")}><div className={styles.click}>시간표</div></div>
                     </div>
                 </div>
                 <div className={styles['header-right-image-box']}>
@@ -55,20 +58,15 @@ const MyPage = () => {
                       </div>
                   )}
                       <div className={styles['main-profile-box']}>
-                        <img className={styles['main-profile-image']} src={googleUserPhotoURL == null && githubUserPhotoURL == null ? null_image : googleUserPhotoURL || githubUserPhotoURL} alt='profile_image'></img>
+                        <img className={styles['main-profile-image']} src={googleUserPhotoURL === null && githubUserPhotoURL === null ? null_image : googleUserPhotoURL || githubUserPhotoURL} alt='profile_image'></img>
                       </div>
                       <div className={styles['main-profile-name']}>
-                          최현우<span>님</span>
+                          {googleUsername === null && ( githubUsername === null || githubUsername === "null" ) ? "닉네임" : googleUsername || githubUsername}<span>{googleUsername === null && (githubUsername === null || githubUsername === "null") ? "" : "님"}</span>
                       </div>
-                      <div className={styles['main-profile-school-name']}>
-                        경북소프트웨어고등학교
+                      <div className={styles['center-line']}>
+                        
                       </div>
-                      <div className={styles['main-profile-school-class']}>
-                        2학년 3반
-                      </div>
-                      <div className={styles['main-profile-modify']} onClick={() => navigate("/MyPageEdit")}>
-                        회원정보 수정
-                      </div>
+                      <div className={styles['main-name']}>Name</div>
                   </div>
                 </div>
             </section>

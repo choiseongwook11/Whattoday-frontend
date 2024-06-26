@@ -5,9 +5,6 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { UserProvider } from './userContext';
 import { CalProvider } from './calContext';
-import ReactModal from 'react-modal';
-
-ReactModal.setAppElement('#root');
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

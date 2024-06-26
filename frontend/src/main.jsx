@@ -11,7 +11,7 @@ function Main() {
         <div>
             <header className={styles.all}>
                 <div className={styles['head-box']}>
-                    <div className={styles['head-text']}><div className={styles['head-text-img']}></div><a href="/" className={styles.click}>오늘 뭐해?</a></div>
+                    <div className={styles['head-text']} onClick={() => navigate("/")}><div className={styles['head-text-img']}></div><div className={styles.click}>오늘 뭐해?</div></div>
                     <div className={styles['header-right-text-box']}>
                         <div className={styles['header-right-text']} onClick={googlelogincheck == null && githublogincheck == null ? () => navigate("/loginmain") : () => navigate("/mainlin") }><div className={styles.click}>로그인</div></div>
                     </div>

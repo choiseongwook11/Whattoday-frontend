@@ -4,6 +4,7 @@ import { getAuth, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, setPe
 import { initializeApp } from "firebase/app";
 import { firebaseConfig } from './config/firebase-config';
 import { useUser } from './userContext';
+import styles from "./loginmain.module.css"
 
 // Firebase 앱 초기화
 const app = initializeApp(firebaseConfig);
@@ -60,17 +61,18 @@ const SocialLogin = () => {
     });
   }, []);
 
-    return (
-      <div>
-        <div className="main-login-text-box-right">
-          <div className="google-logo" onClick={loginWithGoogle}>
-              <div className="logo-text"><div className="click">Google</div></div>
-          </div>
-          <div className="github-logo" onClick={loginWithGithub}>
-              <div className="logo-text"><div className="click">Github</div></div>
-          </div>
+  return (
+    <div className={styles["main-login-text-box-right"]}>
+      <div className={styles["logo-container"]}>
+        <div className={styles["github-logo"]} onClick={loginWithGithub}>
+          <div className={styles["logo-text"]}>Github</div>
+        </div>
+        <div className={styles["ban"]}></div>
+        <div className={styles["google-logo"]} onClick={loginWithGoogle}>
+          <div className={styles["logo-text"]}>Google</div>
         </div>
       </div>
-    );
-  };
+    </div>
+  );
+};
 export default SocialLogin;

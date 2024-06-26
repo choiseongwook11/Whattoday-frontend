@@ -3,8 +3,9 @@ import Main from "./main"
 import Mainlin from "./mainlin"
 import LoginMain from "./loginmain"
 import MyPage from "./MyPage"
-import MyPageEdit from "./MyPageEdit"
-import Cal from "./cal"
+import Cal from "./Cal"
+import Schedule from "./Schedule"
+import Eat from "./Eat"
 
 const App = () => {
     return(
@@ -14,8 +15,9 @@ const App = () => {
         <Route path="/mainlin" element={<Mainlin />}/>
         <Route path="/loginmain" element={<LoginMain />}/>
         <Route path="/MyPage" element={<MyPage />}/>
-        <Route path="/MyPageEdit" element={<MyPageEdit />}/>
         <Route path="/Cal" element={<Cal />}/>
+        <Route path="/Schedule" element={<Schedule />}/>
+        <Route path="/Eat" element={<Eat />}/>
         </Routes>
         </BrowserRouter>
     )

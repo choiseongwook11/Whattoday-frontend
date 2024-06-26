@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import styles from './mainlin.module.css';
 import null_image from './asset/logo.png'
 import { getAuth } from 'firebase/auth';
-import axios from 'axios';
 
 
 function Mainlin() {
@@ -24,11 +23,11 @@ function Mainlin() {
         <div>
             <header className={styles.all}>
                 <div className={styles['head-box']}>
-                    <div className={styles['head-text']}><div className={styles['head-text-img']}></div><a href="/mainlin" className="click">오늘 뭐해?</a></div>
+                    <div className={styles['head-text']} onClick={() => navigate("/mainlin")}><div className={styles['head-text-img']}></div><div className={styles.click}>오늘 뭐해?</div></div>
                       <div className={styles['header-right-text-box']}>
                           <div className={styles['header-right-text']} onClick={() => navigate("/Cal")}><div className={styles.click}>캘린더</div></div>
-                          <div className={styles['header-right-text']} onClick={() => navigate("/login")}><div className={styles.click}>급식표</div></div>
-                          <div className={styles['header-right-text']} onClick={() => navigate("/login")}><div className={styles.click}>시간표</div></div>
+                          <div className={styles['header-right-text']} onClick={() => navigate("/Eat")}><div className={styles.click}>급식표</div></div>
+                          <div className={styles['header-right-text']} onClick={() => navigate("/Schedule")}><div className={styles.click}>시간표</div></div>
                       </div>
                   </div>
                   <div className={styles['header-right-image-box']}>
@@ -69,15 +68,7 @@ function Mainlin() {
             <section className={styles['all']}>
                 <div className={styles['sub-main']}>
                     <ul className={styles['sc-list']}>
-                        <li className={styles['li-cal']} onClick={() => {
-                                        // npm i axios | yarn add axios
-                                        axios.get("http://localhost:3001/api")
-                                            .then((res) => {
-                                                console.log(res);
-                                                navigate("/Cal")
-                                            }).catch((err) => {
-                                                console.log(err);
-                                            })}}>
+                        <li className={styles['li-cal']} onClick={() => navigate("/Cal")}>
                             <div className={styles['li-cal-text-box']}>
                                 <div className={styles['li-cal-title']}>
                                     캘린더
