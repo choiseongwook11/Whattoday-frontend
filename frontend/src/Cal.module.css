@@ -761,9 +761,7 @@ transform: translate(0, -2px);
 }
 
 .diaryinput {
-  position: absolute;
-  left: 670px;
-  top: 690px;
+  display: none;
 }
 
 .image {
@@ -772,6 +770,40 @@ transform: translate(0, -2px);
   height: 600px;
   position: absolute;
   left: 670px;
+}
+
+.btn-upload {
+  width: 120px;
+  height: 40px;
+  background: #4260FF;
+  color: #FFFFFF;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  left: 668px;
+  bottom: 40px;
+  font-family: 'Freesentation-6SemiBold', sans-serif;
+  font-size: 20px;
+}
+
+.btn-upload:hover {
+  background: rgb(77,77,77);
+  color: #fff;
+}
+
+.uploadbtnimg {
+  width: 20px;
+  height: 20px;
+}
+
+.savebtnimg {
+  position: relative;
+  top: 3px;
+  width: 20px;
+  height: 20px;
 }
 
 .modalOverlay {
@@ -797,6 +829,26 @@ transform: translate(0, -2px);
   position: relative;
 }
 
+.saveButton {
+  position: absolute;
+  left: 1150px;
+  bottom: 40px;
+  width: 120px;
+  height: 40px;
+  background: #4260FF;
+  font-family: 'Freesentation-6SemiBold', sans-serif;
+  font-size: 20px;
+  color: #FFFFFF;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+}
+
+.saveButton:hover {
+  background: rgb(77,77,77);
+  color: #fff;
+}
+
 .closeButton {
   position: absolute;
   top: 10px;
@@ -806,9 +858,6 @@ transform: translate(0, -2px);
   font-size: 20px;
   cursor: pointer;
 }
-
-
-
 
 body.active-modal {
   overflow-y: hidden;

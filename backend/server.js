@@ -24,6 +24,20 @@ const db2 = mysql.createConnection({
   database: "image_uploads"
 });
 
+const db3 = mysql.createPool({
+  host: "127.0.0.1",
+  user: "root",
+  password: "1234",
+  database: "diary_uploads"
+});
+
+const db4 = mysql.createConnection({
+  host: '127.0.0.1',
+  user: 'root', // 데이터베이스 사용자명
+  password: '1234', // 데이터베이스 비밀번호
+  database: 'school_num' // 데이터베이스 이름
+});
+
 db2.connect((err) => {
   if (err) {
       console.error('MySQL connection error:', err);
@@ -127,19 +141,43 @@ const upload = multer({ storage });
 
 app.post('/upload', upload.single('file'), (req, res) => {
   if (!req.file) {
-      return res.status(400).send('No file uploaded.');
+    console.log('No file uploaded.');
+    return res.status(400).send('No file uploaded.');
   }
+
+  console.log('File uploaded:', req.file);
 
   const { date } = req.body;
   const filePath = `/uploads/${req.file.filename}`;
 
-  const query = 'INSERT INTO images (date, path) VALUES (?, ?)';
-  db2.query(query, [date, filePath], (err, results) => {
-      if (err) {
-          console.error('Database error:', err);
+  const selectQuery = 'SELECT path FROM images WHERE date = ?';
+  db2.query(selectQuery, [date], (err, results) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).send('Database error.');
+    }
+
+    if (results.length > 0) {
+      // 해당 날짜에 파일 경로가 이미 존재하면 업데이트
+      const updateQuery = 'UPDATE images SET path = ? WHERE date = ?';
+      db2.query(updateQuery, [filePath, date], (updateErr, updateResults) => {
+        if (updateErr) {
+          console.error('Database error:', updateErr);
           return res.status(500).send('Database error.');
-      }
-      res.json({ filePath });
+        }
+        res.json({ message: 'Image path updated successfully.', filePath });
+      });
+    } else {
+      // 해당 날짜에 파일 경로가 존재하지 않으면 새로 삽입
+      const insertQuery = 'INSERT INTO images (date, path) VALUES (?, ?)';
+      db2.query(insertQuery, [date, filePath], (insertErr, insertResults) => {
+        if (insertErr) {
+          console.error('Database error:', insertErr);
+          return res.status(500).send('Database error.');
+        }
+        res.json({ message: 'File uploaded successfully.', filePath });
+      });
+    }
   });
 });
 
@@ -159,3 +197,67 @@ app.get('/image', (req, res) => {
       }
   });
 });
+
+// 다이어리 항목 추가
+app.post('/diary/add', (req, res) => {
+  const { date, content } = req.body;
+  const sql = 'INSERT INTO diary (date, content) VALUES (?, ?)';
+  db3.query(sql, [date, content], (err, result) => {
+    if (err) {
+      console.error('Error adding diary entry:', err);
+      res.status(500).send({ message: 'Failed to add diary entry' });
+    } else {
+      res.status(200).send({ message: 'Diary entry added successfully' });
+    }
+  });
+});
+
+app.put('/diary/update', (req, res) => {
+  const { date, content } = req.body;
+  const sql = 'UPDATE diary SET content = ? WHERE date = ?';
+  db3.query(sql, [content, date], (err, result) => {
+    if (err) {
+      console.error('Error updating diary entry:', err);
+      res.status(500).send({ message: 'Failed to update diary entry' });
+    } else {
+      console.log('Update result:', result); // 디버깅을 위해 결과 로그 출력
+      if (result.affectedRows === 0) {
+        res.status(404).send({ message: 'Diary entry not found' });
+      } else {
+        res.status(200).send({ message: 'Diary entry updated successfully' });
+      }
+    }
+  });
+});
+
+app.get('/diary', (req, res) => {
+  const { date } = req.query;
+  const sql = 'SELECT content FROM diary WHERE date = ?';
+  db3.query(sql, [date], (err, results) => {
+    if (err) {
+      console.error('Error fetching diary entry:', err);
+      res.status(500).send({ message: 'Failed to fetch diary entry' });
+    } else if (results.length === 0) {
+      res.status(404).send({ message: 'No diary entry found for the given date' });
+    } else {
+      res.status(200).send(results[0]);
+    }
+  });
+});
+
+app.post('/getSchools', (req, res) => {
+  const { office, page, limit } = req.body;
+  const table = office.toLowerCase(); // 테이블명으로 사용
+
+  const offset = (page - 1) * limit;
+  const sql = `SELECT 학교명 FROM ?? LIMIT ? OFFSET ?`;
+  db4.query(sql, [table, parseInt(limit), parseInt(offset)], (err, results) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send('서버 오류');
+      return;
+    }
+    res.json(results);
+  });
+});
+

@@ -1,0 +1,32 @@
+.Office__control {
+  font-family: 'Freesentation-5Medium', sans-serif;
+  font-size: 20px;
+  border-radius: 10px;
+  border: hidden;
+  padding: 2px 7px;
+  display: flex;
+  text-align: center;
+}
+
+.Office__menu {
+  font-family: 'Freesentation-5Medium', sans-serif;
+  font-size: 20px;
+  color: black;
+  margin-right: 10px;
+}
+
+.school__control {
+  font-family: 'Freesentation-5Medium', sans-serif;
+  font-size: 20px;
+  border-radius: 15px;
+  border: hidden;
+  padding: 2px 7px;
+  display: flex;
+  text-align: center;
+}
+
+.school__menu {
+  font-family: 'Freesentation-5Medium', sans-serif;
+  font-size: 20px;
+  color: black;
+}

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import styles from './Cal.module.css';
 import { useCal } from "./calContext";
 import axios from "axios";
+import uploadIcon from "./asset/upload.png"
+import saveIcon from "./asset/save.png"
 
 const Calendar = () => {
   const { currentMonth, currentYear, setCurrentMonth, setCurrentYear } = useCal();
@@ -17,6 +19,7 @@ const Calendar = () => {
   });
 
   const [diaryEntries, setDiaryEntries] = useState({});
+  const [diaryContent, setDiaryContent] = useState('');
 
   const [imageSrc, setImageSrc] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -140,17 +143,17 @@ const Calendar = () => {
 
   const formatDate = (date, forUpload = false) => {
     if (!date || isNaN(date.getTime())) {
-        date = new Date(); // 기본값 설정
+        date = new Date();
     }
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
+    const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     if (forUpload) {
         return `${year}-${month}-${day}`;
     } else {
         return `${year}년 ${month}월 ${day}일`;
     }
-};
+  };
 
 
   
@@ -166,38 +169,33 @@ const Calendar = () => {
     setSelectedDate(null);
   };
 
-  const handleDiaryChange = (event) => {
-        const formattedDate = formatDate(selectedDate);
-        setDiaryEntries({
-            ...diaryEntries,
-            [formattedDate]: event.target.value
-        });
-    };
+  const handleDiaryChange = (e) => {
+    setDiaryContent(e.target.value);
+  };
 
   const onUpload = async (e) => {
-      const file = e.target.files?.[0];
-      if (file) {
+    const file = e.target.files?.[0];
+    if (file) {
         const formData = new FormData();
         const date = selectedDate && !isNaN(selectedDate.getTime()) ? selectedDate : new Date();
         formData.append('file', file);
         formData.append('date', formatDate(date, true));
 
-          try {
-              setLoading(true);
-              const response = await axios.post('http://localhost:3001/upload', formData, {
-                  headers: {
-                      'Content-Type': 'multipart/form-data',
-                  },
-              });
-              console.log('File uploaded successfully:', response.data);
-              localStorage.setItem('modalOpen', 'true'); // 모달 상태를 로컬 스토리지에 저장
-              window.location.reload();
-          } catch (error) {
-              console.error('Error uploading file:', error);
-          } finally {
+        try {
+            setLoading(true);
+            const response = await axios.post('http://localhost:3001/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            console.log('File uploaded successfully:', response.data);
+            fetchImageForDate(date);
+        } catch (error) {
+            console.error('Error uploading file:', error);
+        } finally {
             setLoading(false);
-          }
-      }
+        }
+    }
   };
 
   const fetchImageForDate = async (date) => {
@@ -217,6 +215,7 @@ const Calendar = () => {
   useEffect(() => {
     if (modalOpen) {
         fetchImageForDate(selectedDate);
+        fetchDiaryEntry(formatDate(selectedDate, true));
     }
   }, [selectedDate, modalOpen]);
 
@@ -227,6 +226,78 @@ const Calendar = () => {
         localStorage.removeItem('modalOpen'); // 모달 상태를 가져온 후 삭제
     }
   }, []);
+
+  const saveDiaryEntry = async () => {
+    const date = formatDate(selectedDate, true);
+    if (diaryEntries[date]) {
+      await updateDiaryEntry(date, diaryContent);
+    } else {
+      await addDiaryEntry(date, diaryContent);
+    }
+    setDiaryEntries({
+      ...diaryEntries,
+      [date]: diaryContent,
+    });
+  };
+
+  const fetchDiaryEntry = async (date) => {
+    try {
+      const response = await fetch(`http://localhost:3001/diary?date=${date}`);
+      if (response.ok) {
+        const data = await response.json();
+        setDiaryContent(data.content || '');
+        setDiaryEntries({
+          ...diaryEntries,
+          [date]: data.content || '',
+        });
+      } else {
+        console.error('No diary entry found for the given date');
+        setDiaryContent('');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setDiaryContent('');
+    }
+  };
+
+  const addDiaryEntry = async (date, content) => {
+    try {
+      const response = await fetch('http://localhost:3001/diary/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ date, content }),
+      });
+      if (response.ok) {
+        console.log('Diary entry added successfully');
+      } else {
+        console.error('Failed to add diary entry');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const updateDiaryEntry = async (date, content) => {
+    try {
+      const response = await fetch('http://localhost:3001/diary/update', {
+        method: 'PUT', // 수정 요청은 PUT 메서드 사용
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ date, content }),
+      });
+      if (response.ok) {
+        console.log('Diary entry updated successfully');
+      } else {
+        console.error('Failed to update diary entry');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+  
 
   return (
     <div>
@@ -258,22 +329,28 @@ const Calendar = () => {
           <Modal onClose={closeModal}>
               <div className={styles['Diary-background']}>
                   {imageSrc && <img width="100%" src={`http://localhost:3001${imageSrc}`} alt="Preview" className={styles.image} />}
+                  <label htmlFor="file">
+                    <div className={styles["btn-upload"]}><img src={uploadIcon} alt="upload" className={styles.uploadbtnimg}></img>업로드</div>
+                  </label>
                   <input 
                       className={styles.diaryinput}
                       accept="image/*"
                       multiple={false}
                       type="file"
+                      id="file"
                       onChange={onUpload}
+                      name="file"
                   />
                   <div className={styles['Diary-date-modal']}>
                       {formatDate(selectedDate)}
                   </div>
                   <textarea 
-                      className={styles.diary}
-                      value={diaryEntries[formatDate(selectedDate, true)] || ''}
-                      onChange={handleDiaryChange}
-                      placeholder="다이어리 내용을 입력하세요"
+                  className={styles.diary}
+                  value={diaryContent}
+                  onChange={handleDiaryChange}
+                  placeholder="다이어리 내용을 입력하세요"
                   />
+                  <button onClick={saveDiaryEntry} className={styles.saveButton}><img src={saveIcon} alt="save" className={styles.savebtnimg}></img>저장</button>
               </div>
           </Modal>
         )}

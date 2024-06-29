@@ -21,8 +21,6 @@ function Cal() {
 
     const [modal, setModal] = useState(false);
 
-    const [Dairy, setDairy] = useState(false);
-
     const githubUserPhotoURL = sessionStorage.getItem('githubUserPhotoURL');
     const googleUserPhotoURL = sessionStorage.getItem('googleUserPhotoURL');
 
@@ -35,10 +33,6 @@ function Cal() {
     const toggleModal = () => {
       setModal(!modal);
     };
-
-    const toggleDairy = () => {
-      setDairy(!Dairy);
-    }
   
     const handleAddSchedule = async () => {
       try {
@@ -158,27 +152,27 @@ function Cal() {
                 </div>
                 {modal &&(
                   <div className={styles.modal}>
-                  <div className={styles.overlay}>
-                    <div className={styles['modal-content']}>
-                      <div className={styles['modal-title']}>일정 추가하기</div>
-                      <div className={styles['modal-sc-name']}>일정 이름</div>
-                      <div className={styles['modal-sc-name-div']}>
-                      <input
-                        className={styles['modal-sc-name-input']}
-                        maxLength="12"
-                        type="text"
-                        value={calendarName}
-                        onChange={(e) => setCalendarName(e.target.value)}
-                      /></div>
-                      <div className={styles['modal-sc-date']}>날짜</div>
-                      <div className={styles['modal-sc-date-div']}>
-                        <Datapicker onChange={(date) => setCalendarDate(date)}/>
+                    <div className={styles.overlay}>
+                      <div className={styles['modal-content']}>
+                        <div className={styles['modal-title']}>일정 추가하기</div>
+                        <div className={styles['modal-sc-name']}>일정 이름</div>
+                        <div className={styles['modal-sc-name-div']}>
+                        <input
+                          className={styles['modal-sc-name-input']}
+                          maxLength="12"
+                          type="text"
+                          value={calendarName}
+                          onChange={(e) => setCalendarName(e.target.value)}
+                        /></div>
+                        <div className={styles['modal-sc-date']}>날짜</div>
+                        <div className={styles['modal-sc-date-div']}>
+                          <Datapicker onChange={(date) => setCalendarDate(date)}/>
+                        </div>
+                        <button onClick={handleAddSchedule} className={styles.check}><div className={styles.checktext}>추가</div></button>
+                        <button onClick={toggleModal} className={styles.cancel}><div className={styles.canceltext}>취소</div></button>
                       </div>
-                      <button onClick={handleAddSchedule} className={styles.check}><div className={styles.checktext}>추가</div></button>
-                      <button onClick={toggleModal} className={styles.cancel}><div className={styles.canceltext}>취소</div></button>
                     </div>
                   </div>
-                </div>
                 )}
                   <div className={styles.weekdays}>
                     <div className={styles.day}><span className={styles.sun}>일</span></div>
