@@ -15,9 +15,6 @@ const MyPage = () => {
     const githubUserPhotoURL = sessionStorage.getItem('githubUserPhotoURL');
     const googleUserPhotoURL = sessionStorage.getItem('googleUserPhotoURL');
 
-    const googleUsername = sessionStorage.getItem('googleUsername')
-    const githubUsername = sessionStorage.getItem('githubUsername')
-
     const [showDropdown, setShowDropdown] = useState(false);
 
     const [profile, setProfile] = useState(null);
@@ -78,7 +75,7 @@ const MyPage = () => {
     
     const fetchSchools = async (office, page) => {
       try {
-        const response = await axios.post('http://localhost:3001/getSchools', { office, page, limit: 100 });
+        const response = await axios.post('http://124.63.142.219:3001/getSchools', { office, page, limit: 100 });
         const formattedData = response.data.map(school => ({
           학교명: school.학교명,
           행정표준코드: school.행정표준코드
@@ -150,7 +147,7 @@ const MyPage = () => {
     
     const fetchProfileData = async (email) => {
       try {
-        const response = await axios.get('http://localhost:3001/profile', {
+        const response = await axios.get('http://124.63.142.219:3001/profile', {
           params: { email }
         });
         const data = response.data;
@@ -175,7 +172,7 @@ const MyPage = () => {
     
     const updateProfileData = async (email, Office, schoolName, schoolCode, grade, Class, num, name) => {
       try {
-        const response = await axios.post('http://localhost:3001/profile', {
+        const response = await axios.post('http://124.63.142.219:3001/profile', {
           email, Office, schoolName, schoolCode, grade, Class, num, name
         });
         setProfile(response.data); // 업데이트된 데이터를 상태에 저장
@@ -325,16 +322,16 @@ const MyPage = () => {
                                           />
 
                                       <label htmlFor="school" className={styles.schoolname}>학교명:</label>
-                                          <Select
-                                            name="school"
-                                            options={schoolOptions}
-                                            onChange={handleSchoolChange}
-                                            className="school"
-                                            classNamePrefix="school"
-                                            value={selectedSchool}
-                                            placeholder="--학교를 선택해주세요--"
-                                            isSearchable
-                                          />
+                                      <Select
+                                          name="school"
+                                          options={schoolOptions}
+                                          onChange={handleSchoolChange}
+                                          className="school"
+                                          classNamePrefix="school"
+                                          value={selectedSchool ? { value: selectedSchool.value, label: selectedSchool.value } : null}
+                                          placeholder="--학교를 선택해주세요--"
+                                          isSearchable
+                                        />
                                       </div>
                                     <div className={styles['school-info-container']}>
                                       <label htmlFor="grade" className={styles.gradename}>학년:</label>

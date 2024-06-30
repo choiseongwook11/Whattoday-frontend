@@ -44,7 +44,18 @@ const Calendar = () => {
   useEffect(() => {
     const fetchSchoolSchedules = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/schooldata");
+        const googleUserEmail = sessionStorage.getItem('googleUseremail');
+        const githubUserEmail = sessionStorage.getItem('githubUseremail');
+        const email = googleUserEmail || githubUserEmail; // 어느 이메일이든 사용
+
+        if (!email) {
+          console.error("이메일이 없습니다.");
+          return;
+        }
+
+        const response = await axios.get("http://124.63.142.219:3001/schooldata", {
+          params: { email }
+        });
         const data = response.data.SchoolSchedule[1].row;
         const schedulesByDate = processScheduleData(data);
         setSchoolSchedules(schedulesByDate);
@@ -55,7 +66,7 @@ const Calendar = () => {
 
     const fetchPersonalSchedules = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/personaldata");
+        const response = await axios.get("http://124.63.142.219:3001/personaldata");
         const schedulesByDate = processScheduleData(response.data, true);
         setPersonalSchedules(schedulesByDate);
       } catch (error) {
@@ -183,7 +194,7 @@ const Calendar = () => {
 
         try {
             setLoading(true);
-            const response = await axios.post('http://localhost:3001/upload', formData, {
+            const response = await axios.post('http://124.63.142.219:3001/upload', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -202,7 +213,7 @@ const Calendar = () => {
     try {
         setLoading(true);
         const formattedDate = formatDate(date, true);
-        const response = await axios.get(`http://localhost:3001/image?date=${formattedDate}`);
+        const response = await axios.get(`http://124.63.142.219:3001/image?date=${formattedDate}`);
         setImageSrc(response.data.imagePath);
     } catch (error) {
         console.error('Error fetching image:', error);
@@ -242,7 +253,7 @@ const Calendar = () => {
 
   const fetchDiaryEntry = async (date) => {
     try {
-      const response = await fetch(`http://localhost:3001/diary?date=${date}`);
+      const response = await fetch(`http://124.63.142.219:3001/diary?date=${date}`);
       if (response.ok) {
         const data = await response.json();
         setDiaryContent(data.content || '');
@@ -262,7 +273,7 @@ const Calendar = () => {
 
   const addDiaryEntry = async (date, content) => {
     try {
-      const response = await fetch('http://localhost:3001/diary/add', {
+      const response = await fetch('http://124.63.142.219:3001/diary/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -281,7 +292,7 @@ const Calendar = () => {
 
   const updateDiaryEntry = async (date, content) => {
     try {
-      const response = await fetch('http://localhost:3001/diary/update', {
+      const response = await fetch('http://124.63.142.219:3001/diary/update', {
         method: 'PUT', // 수정 요청은 PUT 메서드 사용
         headers: {
           'Content-Type': 'application/json',
@@ -328,7 +339,7 @@ const Calendar = () => {
         {modalOpen && (
           <Modal onClose={closeModal}>
               <div className={styles['Diary-background']}>
-                  {imageSrc && <img width="100%" src={`http://localhost:3001${imageSrc}`} alt="Preview" className={styles.image} />}
+                  {imageSrc && <img width="100%" src={`http://124.63.142.219:3001${imageSrc}`} alt="Preview" className={styles.image} />}
                   <label htmlFor="file">
                     <div className={styles["btn-upload"]}><img src={uploadIcon} alt="upload" className={styles.uploadbtnimg}></img>업로드</div>
                   </label>

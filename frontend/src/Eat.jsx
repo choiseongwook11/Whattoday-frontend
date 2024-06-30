@@ -27,7 +27,7 @@ const Eat = () => {
                     <a href="/mainlin" className={styles.click}>오늘 뭐해?</a>
                 </div>
                     <div className={styles['header-right-text-box']}>
-                        <div className={styles['header-right-text']} onClick={() => navigate("/login")}><div className={styles.click}>캘린더</div></div>
+                        <div className={styles['header-right-text']} onClick={() => navigate("/Cal")}><div className={styles.click}>캘린더</div></div>
                         <div className={styles['header-right-text']} onClick={() => navigate("/Eat")}><div className={styles.click}>급식표</div></div>
                         <div className={styles['header-right-text']} onClick={() => navigate("/Schedule")}><div className={styles.click}>시간표</div></div>
                     </div>

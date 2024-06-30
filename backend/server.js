@@ -58,6 +58,7 @@ db2.connect((err) => {
   }
 });
 
+
 app.use(
   cors({
     origin: "*", // 출처 허용 옵션
@@ -77,16 +78,77 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-app.get("/schooldata", async (req, res) => {
-  try {
-    const response = await axios.get(
-      `https://open.neis.go.kr/hub/SchoolSchedule?ATPT_OFCDC_SC_CODE=${gyocode}&SD_SCHUL_CODE=${schoolcode}&KEY=9333296d834848e0939ca37ddad7d407&Type=json&pIndex=1&pSize=1000&AA_FROM_YMD=20240101&AA_TO_YMD=20241231`
-    ); // 외부 API 링크
-    res.json(response.data);
-  } catch (error) {
-    console.error("Error fetching data from external API:", error);
-    res.status(500).send("Error fetching data");
+app.get("/schooldata", (req, res) => {
+  const email = req.query.email;
+  console.log('Received email:', email);
+
+  if (!email) {
+    return res.status(400).send({ message: 'Email is required' });
   }
+
+  db5.query('SELECT Office, schoolCode FROM student WHERE email = ?', [email], (error, results) => {
+    if (error) {
+      console.error('Error executing query:', error);
+      return res.status(500).send("Error fetching data from database");
+    }
+
+    console.log('Query result:', results);
+
+    if (results.length === 0) {
+      console.log('Profile not found for email:', email);
+      return res.status(404).send({ message: 'Profile not found' });
+    }
+
+    const Office = results[0].Office;
+    const schoolCode = results[0].schoolCode;
+    console.log('Office:', Office, 'SchoolCode:', schoolCode);
+
+    axios.get(
+      `https://open.neis.go.kr/hub/SchoolSchedule?ATPT_OFCDC_SC_CODE=${Office}&SD_SCHUL_CODE=${schoolCode}&KEY=9333296d834848e0939ca37ddad7d407&Type=json&pIndex=1&pSize=1000&AA_FROM_YMD=20240101&AA_TO_YMD=20241231`
+    )
+    .then(response => {
+      res.json(response.data);
+    })
+    .catch(error => {
+      console.error("Error fetching data from external API:", error);
+      res.status(500).send("Error fetching data");
+    });
+  });
+});
+
+app.get("/timetabledata", (req, res) => {
+  const email = req.query.email;
+  console.log('Received email:', email);
+
+  if (!email) {
+    return res.status(400).send({ message: 'Email is required' });
+  }
+
+  db5.query('SELECT Office, schoolCode FROM student WHERE email = ?', [email], (error, results) => {
+    if (error) {
+      console.error('Error executing query:', error);
+      return res.status(500).send({ message: "Error fetching data from database" });
+    }
+
+    if (results.length === 0) {
+      console.log('Profile not found for email:', email);
+      return res.status(404).send({ message: 'Profile not found' });
+    }
+
+    const { Office, schoolCode } = results[0];
+    console.log('Office:', Office, 'SchoolCode:', schoolCode);
+
+    const apiUrl = `https://open.neis.go.kr/hub/hisTimetable?ATPT_OFCDC_SC_CODE=${Office}&SD_SCHUL_CODE=${schoolCode}&KEY=9333296d834848e0939ca37ddad7d407&Type=json&pIndex=1&pSize=1000&AA_FROM_YMD=20240101&AA_TO_YMD=20241231`;
+
+    axios.get(apiUrl)
+      .then(response => {
+        res.json(response.data);
+      })
+      .catch(error => {
+        console.error("Error fetching data from external API:", error);
+        res.status(500).send({ message: "Error fetching data from external API" });
+      });
+  });
 });
 
 app.post('/personal-addschedule', (req, res) => {
@@ -300,6 +362,7 @@ app.post('/login', (req, res) => {
 
 app.get('/profile', (req, res) => {
   const email = req.query.email;
+  console.log('Received email for profile:', email); // 이메일 로그 출력
 
   if (!email) {
     return res.status(400).send({ message: 'Email is required' });
@@ -313,6 +376,7 @@ app.get('/profile', (req, res) => {
     }
 
     if (results.length === 0) {
+      console.log('Profile not found for email:', email);
       return res.status(404).send({ message: 'Profile not found' });
     }
 

@@ -36,7 +36,7 @@ function Cal() {
   
     const handleAddSchedule = async () => {
       try {
-        const response = await axios.post('http://localhost:3001/personal-addschedule', {
+        const response = await axios.post('http://124.63.142.219:3001/personal-addschedule', {
           calendar_name: calendarName,
           calendar_date: calendarDate,
         });
@@ -69,7 +69,7 @@ function Cal() {
                     <div className={styles['head-text']} onClick={() => navigate("/mainlin")}><div className={styles['head-text-img']}></div><div className={styles.click}>오늘 뭐해?</div></div>
                       <div className={styles['header-right-text-box']}>
                           <div className={styles['header-right-text']} onClick={() => navigate("/Cal")}><div className={styles.click}>캘린더</div></div>
-                          <div className={styles['header-right-text']} onClick={() => navigate("/login")}><div className={styles.click}>급식표</div></div>
+                          <div className={styles['header-right-text']} onClick={() => navigate("/Eat")}><div className={styles.click}>급식표</div></div>
                           <div className={styles['header-right-text']} onClick={() => navigate("/Schedule")}><div className={styles.click}>시간표</div></div>
                       </div>
                   </div>

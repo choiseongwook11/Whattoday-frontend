@@ -30,7 +30,7 @@ const SocialLogin = () => {
 
       const idToken = await google_user.getIdToken();
       try {
-        const response = await axios.post('http://localhost:3001/login', { idToken });
+        const response = await axios.post('http://124.63.142.219:3001/login', { idToken });
         console.log(response.data);
         navigate('/mainlin');
       } catch (error) {
@@ -53,7 +53,7 @@ const SocialLogin = () => {
 
       const idToken = await github_user.getIdToken();
       try {
-        const response = await axios.post('http://localhost:3001/login', { idToken });
+        const response = await axios.post('http://124.63.142.219:3001/login', { idToken });
         console.log(response.data);
         navigate('/mainlin');
       } catch (error) {
