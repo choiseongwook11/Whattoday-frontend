@@ -263,7 +263,7 @@ app.post('/getSchools', (req, res) => {
   const table = office.toLowerCase(); // 테이블명으로 사용
 
   const offset = (page - 1) * limit;
-  const sql = `SELECT 학교명 FROM ?? LIMIT ? OFFSET ?`;
+  const sql = `SELECT 학교명, 행정표준코드 FROM ?? LIMIT ? OFFSET ?`; // 행정표준코드 추가
   db4.query(sql, [table, parseInt(limit), parseInt(offset)], (err, results) => {
     if (err) {
       console.error(err);
@@ -273,6 +273,7 @@ app.post('/getSchools', (req, res) => {
     res.json(results);
   });
 });
+
 
 app.post('/login', (req, res) => {
   const idToken = req.body.idToken;
@@ -304,7 +305,7 @@ app.get('/profile', (req, res) => {
     return res.status(400).send({ message: 'Email is required' });
   }
 
-  const query = 'SELECT Office, schoolName, grade, Class, num FROM student WHERE email = ?';
+  const query = 'SELECT Name, Office, schoolName, grade, Class, num, schoolCode FROM student WHERE email = ?';
   db5.query(query, [email], (err, results) => {
     if (err) {
       console.error('Error fetching profile:', err);
@@ -315,25 +316,35 @@ app.get('/profile', (req, res) => {
       return res.status(404).send({ message: 'Profile not found' });
     }
 
-    res.send(results[0]);
+    // name 값이 null일 경우 빈 문자열로 설정
+    const profile = results[0];
+    profile.Name = profile.Name || '';
+
+    res.send(profile);
   });
 });
 
-
 app.post('/profile', (req, res) => {
-  const { email, Office, schoolName, grade, Class, num } = req.body;
+  const { name, email, Office, schoolName, schoolCode, grade, Class, num } = req.body;
 
-  if (!email) {
-    return res.status(400).send({ message: 'Email is required' });
+  if (!email || !name || !Office || !schoolName || !schoolCode || !grade || !Class || !num) {
+    return res.status(400).send({ message: 'All fields are required' });
   }
 
-  const query = 'UPDATE student SET Office = ?, schoolName = ?, grade = ?, Class = ?, num = ? WHERE email = ?';
-  db5.query(query, [Office, schoolName, grade, Class, num, email], (err, result) => {
+  const query = 'UPDATE student SET Office = ?, schoolName = ?, schoolCode = ?, grade = ?, Class = ?, num = ?, Name = ? WHERE email = ?';
+  db5.query(query, [Office, schoolName, schoolCode, grade, Class, num, name, email], (err, result) => {
     if (err) {
       console.error('Error updating profile:', err);
       return res.status(500).send({ message: 'Internal Server Error' });
     }
-    res.send({ message: 'Profile updated' });
+
+    if (result.affectedRows === 0) {
+      return res.status(404).send({ message: 'Profile not found' });
+    }
+
+    res.send({ message: 'Profile updated successfully' });
   });
 });
+
+
 

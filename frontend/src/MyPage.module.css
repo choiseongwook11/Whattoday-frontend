@@ -471,9 +471,13 @@
 }
 
 .main-name-print {
+  color: #797979;
   font-size: 50px;
+  font-family: 'Freesentation-5Medium', sans-serif;
   top: 10px;
   position: relative;
+  outline: none;
+  border: none;
 }
 
 .main-school-print {
@@ -492,6 +496,24 @@
   font-size: 40px;
   bottom: 10px;
   position: absolute;
+}
+
+.updateButton {
+  background-color: #69AEFF;
+  font-family: 'Freesentation-7Bold', sans-serif;
+  color: #ffffff;
+  width: 140px;
+  height: 60px;
+  font-size: 30px;
+  border-radius: 30px;
+  position: absolute;
+  left: 500px;
+  top: 50px;
+  border: none;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 

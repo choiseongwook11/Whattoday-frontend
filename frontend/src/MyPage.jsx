@@ -22,7 +22,6 @@ const MyPage = () => {
 
     const [profile, setProfile] = useState(null);
 
-    const [schoolName, setSchoolName] = useState('');
     const [grade, setGrade] = useState('');
     const [Class, setClass] = useState('');
     const [num, setNum] = useState('');
@@ -53,7 +52,9 @@ const MyPage = () => {
       const [schools, setSchools] = useState([]);
       const [currentPage, setCurrentPage] = useState(1);
       const [hasMore, setHasMore] = useState(true);
-      const [selectedSchool, setSelectedSchool] = useState(null);
+      const [name, setName] = useState('');
+      const [selectedSchool, setSelectedSchool] = useState({ value: '', code: '' });
+
 
     const handleLogout = () => {
       sessionStorage.clear();
@@ -70,14 +71,23 @@ const MyPage = () => {
         fetchSchools(selectedOffice.value, 1);
       }
     }, [selectedOffice]);
-  
+
+    useEffect(() => {
+      console.log("선택된 학교 상태 업데이트:", selectedSchool);
+    }, [selectedSchool]);
+    
     const fetchSchools = async (office, page) => {
       try {
         const response = await axios.post('http://localhost:3001/getSchools', { office, page, limit: 100 });
+        const formattedData = response.data.map(school => ({
+          학교명: school.학교명,
+          행정표준코드: school.행정표준코드
+        }));
+  
         if (page === 1) {
-          setSchools(response.data);
+          setSchools(formattedData);
         } else {
-          setSchools((prevSchools) => [...prevSchools, ...response.data]);
+          setSchools((prevSchools) => [...prevSchools, ...formattedData]);
         }
         setHasMore(response.data.length === 100);
         setCurrentPage(page + 1);
@@ -86,20 +96,21 @@ const MyPage = () => {
         setHasMore(false);
       }
     };
-  
+    
     const handleMoreSchools = () => {
       if (hasMore) {
         fetchSchools(selectedOffice.value, currentPage);
       }
     };
-  
+    
     const handleOfficeChange = (selectedOption) => {
       setSelectedOffice(selectedOption);
       setSchools([]);
       setCurrentPage(1);
       setHasMore(true);
+      setSelectedSchool(null);
     };
-  
+    
     const handleSchoolChange = (selectedOption) => {
       if (selectedOption && selectedOption.value === 'more') {
         if (!selectedOffice) {
@@ -107,12 +118,19 @@ const MyPage = () => {
         } else {
           handleMoreSchools();
         }
-        setSelectedSchool(null);
+        setSelectedSchool({ value: '', code: '' });
       } else {
-        setSelectedSchool(selectedOption);
+        const selectedSchoolData = schools.find(school => school.학교명 === selectedOption.value);
+        if (selectedSchoolData) {
+          setSelectedSchool({ value: selectedOption.value, code: selectedSchoolData.행정표준코드 });
+          console.log("선택된 학교:", selectedSchoolData); // 디버깅 용도
+        } else {
+          console.error("선택된 학교 데이터를 찾을 수 없습니다.");
+        }
       }
     };
-
+    
+    
     const getEmailFromSessionStorage = () => {
       const googleUserEmail = sessionStorage.getItem('googleUseremail');
       const githubUserEmail = sessionStorage.getItem('githubUseremail');
@@ -130,81 +148,94 @@ const MyPage = () => {
       }
     };
     
-  
     const fetchProfileData = async (email) => {
       try {
         const response = await axios.get('http://localhost:3001/profile', {
           params: { email }
         });
         const data = response.data;
-        setProfile(data); // 가져온 데이터를 상태에 저장
-        setSelectedOffice(offices.find((office) => office.value === data.Office)); // Office 상태 업데이트
-        setSelectedSchool({ value: data.schoolName }); // 학교 상태 업데이트
-        setGrade(data.grade); // 학년 상태 업데이트
-        setClass(data.Class); // 반 상태 업데이트
-        setNum(data.num); // 번호 상태 업데이트
+        console.log('Fetched profile data:', data); // 디버깅 용도
+        if (data) {
+          setProfile(data); // 가져온 데이터를 상태에 저장
+          setSelectedOffice(offices.find((office) => office.value === data.Office)); // Office 상태 업데이트
+          setSelectedSchool({ value: data.schoolName, code: data.schoolCode }); // schoolCode로 수정
+          setGrade(data.grade); // 학년 상태 업데이트
+          setClass(data.Class); // 반 상태 업데이트
+          setNum(data.num); // 번호 상태 업데이트
+          setName(data.Name); // name 상태 업데이트, null 값을 빈 문자열로 대체
+        } else {
+          console.error('데이터가 없습니다:', data);
+        }
       } catch (error) {
         console.error('데이터 가져오기 중 오류 발생:', error);
         alert('데이터 가져오기에 실패했습니다.');
       }
     };
-  
-    const updateProfileData = async (email, Office, schoolName, grade, Class, num) => {
+    
+    
+    const updateProfileData = async (email, Office, schoolName, schoolCode, grade, Class, num, name) => {
       try {
         const response = await axios.post('http://localhost:3001/profile', {
-          email, Office, schoolName, grade, Class, num
+          email, Office, schoolName, schoolCode, grade, Class, num, name
         });
         setProfile(response.data); // 업데이트된 데이터를 상태에 저장
         alert('프로필이 성공적으로 업데이트되었습니다.');
+        setModal(!modal);
+        window.location.reload();
       } catch (error) {
         console.error('프로필 업데이트 중 오류 발생:', error);
         alert('프로필 업데이트에 실패했습니다.');
       }
     };
-  
+    
     const handleSubmit = async (event) => {
       event.preventDefault();
       const email = getEmailFromSessionStorage();
       if (!email) return;
-  
+    
       console.log("업데이트 요청 데이터:", {
         email,
         Office: selectedOffice ? selectedOffice.value : '',
-        selectedSchool: selectedSchool ? selectedSchool.value : '',
+        schoolName: selectedSchool ? selectedSchool.value : '',
+        schoolCode: selectedSchool ? selectedSchool.code : '',
         grade,
         Class,
-        num
+        num,
+        name
       });
-  
+    
       await updateProfileData(
         email,
         selectedOffice ? selectedOffice.value : '',
         selectedSchool ? selectedSchool.value : '',
+        selectedSchool ? selectedSchool.code : '',
         grade,
         Class,
-        num
+        num,
+        name
       );
     };
-  
+    
     const fetchData = async () => {
       const email = getEmailFromSessionStorage();
       if (!email) return;
-  
+    
       await fetchProfileData(email);
     };
-  
+    
     useEffect(() => {
       fetchData();
-    }, []);  
-
+    }, []);
+    
     const textover = (text) => {
       return text && text.length >= 12 ? styles['small-font'] : '';
     };
-  
+    
     const schoolOptions = [
       ...schools.map((school) => ({ value: school.학교명, label: school.학교명 })),
       ...(hasMore ? [{ value: 'more', label: '더보기...' }] : [])
     ];
+    
 
     return (
         <div>
@@ -246,14 +277,24 @@ const MyPage = () => {
                         <img className={styles['main-profile-image']} src={googleUserPhotoURL === null && githubUserPhotoURL === null ? null_image : googleUserPhotoURL || githubUserPhotoURL} alt='profile_image'></img>
                       </div>
                       <div className={styles['main-profile-name']}>
-                          {googleUsername === null && ( githubUsername === null || githubUsername === "null" ) ? "닉네임" : googleUsername || githubUsername}<span>{googleUsername === null && (githubUsername === null || githubUsername === "null") ? "" : "님"}</span>
+                      {profile ? (
+                        <div>{profile.Name}</div>
+                      ) : (
+                        <span>로딩중..</span>
+                      )}
                       </div>
                       <div className={styles['center-line']}>
                         
                       </div>
                     <div className={styles['main-name']}>
                             <span>Name</span>
-                            <div className={styles['main-name-print']}>test</div>
+                            <input
+                              type="text"
+                              value={name}
+                              onChange={(e) => setName(e.target.value)}
+                              className={styles['main-name-print']}
+                            />
+                            <button onClick={handleSubmit} className={styles.updateButton}>이름 변경</button>
                         <div className={styles['horizontal-line']}></div>
                             </div>
                         <div className={styles['main-school']}>
@@ -403,8 +444,7 @@ const MyPage = () => {
                         <div className={styles['horizontal-class-line']}></div>
                     </div>
                       <div className={styles['bottom-button']}>
-                      <div className={styles['click']}><div className={styles['cancel-button']}>취소</div></div>
-                        <div className={styles['click']}><div className={styles['apply-button']}>확인</div></div>
+                        <div className={styles['click']}><div className={styles['apply-button']} onClick={() => navigate('/mainlin')}>확인</div></div>
                       </div>
                   </div>
                 </div>
