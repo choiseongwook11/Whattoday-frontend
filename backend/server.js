@@ -4,38 +4,51 @@ const mysql = require("mysql"); // npm i mysql | yarn add mysql
 const axios = require("axios");
 const multer = require("multer");
 const path = require('path');
+const admin = require('firebase-admin');
 const app = express();
+const serviceAccount = require('../frontend/admin SDK/whattoday-61d7b-firebase-adminsdk-yp10e-73ad4b3ab3.json')
 const PORT = 3001; // 포트번호 설정
 
 const gyocode = "R10";
 let schoolcode = 8750767;
 
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
 const db = mysql.createPool({
-  host: "127.0.0.1", // 호스트
-  user: "root", // 데이터베이스 계정
+  host: "124.63.142.219", // 호스트
+  user: "today", // 데이터베이스 계정
   password: "1234", // 데이터베이스 비밀번호
   database: "personaldata", // 사용할 데이터베이스
 });
 
 const db2 = mysql.createConnection({
-  host: "127.0.0.1",
-  user: "root",
+  host: "124.63.142.219",
+  user: "today",
   password: "1234",
   database: "image_uploads"
 });
 
 const db3 = mysql.createPool({
-  host: "127.0.0.1",
-  user: "root",
+  host: "124.63.142.219",
+  user: "today",
   password: "1234",
   database: "diary_uploads"
 });
 
 const db4 = mysql.createConnection({
-  host: '127.0.0.1',
-  user: 'root', // 데이터베이스 사용자명
+  host: '124.63.142.219',
+  user: 'today', // 데이터베이스 사용자명
   password: '1234', // 데이터베이스 비밀번호
   database: 'school_num' // 데이터베이스 이름
+});
+
+const db5 = mysql.createConnection({
+  host: '124.63.142.219',
+  user: 'today',
+  password: '1234',
+  database: 'today'
 });
 
 db2.connect((err) => {
@@ -258,6 +271,69 @@ app.post('/getSchools', (req, res) => {
       return;
     }
     res.json(results);
+  });
+});
+
+app.post('/login', (req, res) => {
+  const idToken = req.body.idToken;
+  
+  admin.auth().verifyIdToken(idToken)
+    .then(decodedToken => {
+      const email = decodedToken.email;
+      const photoURL = decodedToken.picture;
+
+      const query = 'INSERT INTO student (email, photoURL) VALUES (?, ?) ON DUPLICATE KEY UPDATE photoURL = ?';
+      db5.query(query, [email, photoURL, photoURL], (err, result) => {
+        if (err) {
+          console.error('Error inserting or updating user:', err);
+          return res.status(500).send({ message: 'Internal Server Error' });
+        }
+        res.send({ message: 'User logged in', email });
+      });
+    })
+    .catch(error => {
+      console.error('Error verifying ID token:', error);
+      res.status(401).send({ message: 'Unauthorized' });
+    });
+});
+
+app.get('/profile', (req, res) => {
+  const email = req.query.email;
+
+  if (!email) {
+    return res.status(400).send({ message: 'Email is required' });
+  }
+
+  const query = 'SELECT Office, schoolName, grade, Class, num FROM student WHERE email = ?';
+  db5.query(query, [email], (err, results) => {
+    if (err) {
+      console.error('Error fetching profile:', err);
+      return res.status(500).send({ message: 'Internal Server Error' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).send({ message: 'Profile not found' });
+    }
+
+    res.send(results[0]);
+  });
+});
+
+
+app.post('/profile', (req, res) => {
+  const { email, Office, schoolName, grade, Class, num } = req.body;
+
+  if (!email) {
+    return res.status(400).send({ message: 'Email is required' });
+  }
+
+  const query = 'UPDATE student SET Office = ?, schoolName = ?, grade = ?, Class = ?, num = ? WHERE email = ?';
+  db5.query(query, [Office, schoolName, grade, Class, num, email], (err, result) => {
+    if (err) {
+      console.error('Error updating profile:', err);
+      return res.status(500).send({ message: 'Internal Server Error' });
+    }
+    res.send({ message: 'Profile updated' });
   });
 });
 

@@ -223,12 +223,12 @@
 }
 
 .main-school {
-  top: 298px;
+  top: 258px;
   left: 914px;
 }
 
 .main-class {
-  top: 498px;
+  top: 408px;
   left: 914px;
 }
 
@@ -236,7 +236,7 @@
   width: 490px;
   height: 2px;
   background-color: #797979;
-  margin-top: 70px;
+  margin-top: 10px;
 }
 
 .horizontal-school-line {
@@ -245,6 +245,14 @@
   margin-top: -10px;
   background-color: #797979;
 }
+
+.horizontal-class-line {
+  width: 400px;
+  height: 2px;
+  margin-top: 70px;
+  background-color: #797979;
+}
+
 
 .center-line {
   margin-left: 795px;
@@ -379,17 +387,6 @@
   margin-right: 5px;
 }
 
-.Office {
-  font-family: 'Freesentation-5Medium', sans-serif;
-  font-size: 20px;
-  border-radius: 15px;
-  border: hidden;
-  padding: 8px 22px;
-  display: flex;
-  text-align: center;
-  margin-right: 30px;
-}
-
 .gradename {
   font-family: 'Freesentation-5Medium', sans-serif;
   font-size: 20px;
@@ -443,6 +440,11 @@
   text-align: center;
 }
 
+.grade:focus .class:focus .num:focus {
+  outline: none;
+  box-shadow: none;
+}
+
 .schoolname {
   font-family: 'Freesentation-5Medium', sans-serif;
   font-size: 20px;
@@ -450,17 +452,6 @@
   margin-left: 20px;
 }
 
-.school {
-  font-family: 'Freesentation-5Medium', sans-serif;
-  font-size: 20px;
-  border-radius: 15px;
-  border: hidden;
-  padding: 8px 22px;
-  display: flex;
-  text-align: center;
-}
-
-/* 전체 컨테이너 스타일 */
 .school-change {
   display: flex;
   flex-direction: column;
@@ -477,6 +468,30 @@
 .school-info-container {
   display: flex;
   align-items: flex-start;
+}
+
+.main-name-print {
+  font-size: 50px;
+  top: 10px;
+  position: relative;
+}
+
+.main-school-print {
+  font-size: 50px;
+  bottom: 10px;
+  position: absolute;
+}
+
+.main-school-print.small-font {
+  font-size: 25px;
+  bottom: 10px;
+  position: absolute;
+}
+
+.main-class-print {
+  font-size: 40px;
+  bottom: 10px;
+  position: absolute;
 }
 
 

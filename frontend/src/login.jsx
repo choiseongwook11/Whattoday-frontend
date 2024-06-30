@@ -4,7 +4,8 @@ import { getAuth, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, setPe
 import { initializeApp } from "firebase/app";
 import { firebaseConfig } from './config/firebase-config';
 import { useUser } from './userContext';
-import styles from "./loginmain.module.css"
+import styles from "./loginmain.module.css";
+import axios from 'axios';
 
 // Firebase 앱 초기화
 const app = initializeApp(firebaseConfig);
@@ -16,44 +17,56 @@ const SocialLogin = () => {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const loginWithGoogle = () => {
+  const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    setPersistence(auth, browserSessionPersistence)
-      .then(() => {
-        signInWithPopup(auth, provider)
-          .then((userCred) => {
-            const google_user = userCred.user;
-            setGoogleUser(google_user);
-            sessionStorage.setItem('googlelogincheck', google_user)
-            sessionStorage.setItem('googleUserPhotoURL', google_user.photoURL);
-            sessionStorage.setItem('googleUseremail', google_user.email);
-            navigate('/mainlin');
-          })
-          .catch((error) => {
-            console.error("Google Login failed:", error);
-          });
-      });
+    try {
+      await setPersistence(auth, browserSessionPersistence);
+      const userCred = await signInWithPopup(auth, provider);
+      const google_user = userCred.user;
+      setGoogleUser(google_user);
+      sessionStorage.setItem('googlelogincheck', google_user);
+      sessionStorage.setItem('googleUserPhotoURL', google_user.photoURL);
+      sessionStorage.setItem('googleUseremail', google_user.email);
+
+      const idToken = await google_user.getIdToken();
+      try {
+        const response = await axios.post('http://localhost:3001/login', { idToken });
+        console.log(response.data);
+        navigate('/mainlin');
+      } catch (error) {
+        console.error("Login failed:", error);
+      }
+    } catch (error) {
+      console.error("Google Login failed:", error);
+    }
   };
 
-  const loginWithGithub = () => {
+  const loginWithGithub = async () => {
     const provider = new GithubAuthProvider();
-    signInWithPopup(auth, provider)
-      .then((userCred) => {
-        const github_user = userCred.user;
-        setGithubUser(github_user);
-        sessionStorage.setItem('githublogincheck', github_user)
-        sessionStorage.setItem('githubUserPhotoURL', github_user.photoURL);
-        sessionStorage.setItem('githubUseremail', github_user.email);
+    try {
+      const userCred = await signInWithPopup(auth, provider);
+      const github_user = userCred.user;
+      setGithubUser(github_user);
+      sessionStorage.setItem('githublogincheck', github_user);
+      sessionStorage.setItem('githubUserPhotoURL', github_user.photoURL);
+      sessionStorage.setItem('githubUseremail', github_user.email);
+
+      const idToken = await github_user.getIdToken();
+      try {
+        const response = await axios.post('http://localhost:3001/login', { idToken });
+        console.log(response.data);
         navigate('/mainlin');
-      })
-      .catch((error) => {
-        console.error("Github Login failed:", error);
-      });
+      } catch (error) {
+        console.error("Login failed:", error);
+      }
+    } catch (error) {
+      console.error("Github Login failed:", error);
+    }
   };
 
   useEffect(() => {
     getAuth().onAuthStateChanged((user) => {
-      if(user) {
+      if (user) {
         setIsLoggedIn(true);
       } else {
         setIsLoggedIn(false);
