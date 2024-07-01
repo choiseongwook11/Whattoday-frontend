@@ -49,6 +49,19 @@ a {
     cursor: pointer;
 }
 
+.profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-box {
+  width: 50px;
+  height: 50px; 
+  border-radius: 70%;
+  overflow: hidden;
+}
+
 a:link,
 a:visited,
 a:active,
@@ -61,15 +74,13 @@ a:hover {
 .head-box {
     width: 100%;
     height: 70px;
-    position: fixed;
     background-color: #ffffff;
     display: flex;
-    z-index: 1;
     align-items: center;
 }
 
 .head-text {
-    margin: 0 10%;
+    margin: 0 2%;
     color: #FFA114;
     font-size: 22px;
     align-items: center;
@@ -86,26 +97,46 @@ a:hover {
 }
 
 .header-right-text-box {
-    top: 0;
-    right: 0;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    position: absolute;
-    height: 70px;
+  margin-right: 80px;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  position: absolute;
+  height: 70px;
 }
 
 .header-right-text {
-    margin-right: 100px;
-    font-size: 22px;
-    align-items: center;
-    display: flex;
-    color: #FFA114;
-    transition: 0.4s;
+  margin-right: 55px;
+  font-size: 22px;
+  align-items: center;
+  display: flex;
+  color: #FFA114;
+  transition: 0.4s;
+}
+
+.header-right-profile {
+  margin-right: 35px;
+  align-items: center;
+  display: flex;
+  color: #ffffff;
+  position: relative
+}
+
+.header-right-image-box {
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  position: absolute;
+  height: 70px;
 }
 
 .header-right-text:hover {
-    transform: translate(0px, -2px);
+  transform: translate(0, -2px);
+  
 }
 
 
@@ -117,6 +148,26 @@ a:hover {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.profile-menu {
+  width: 104px;
+  height: 71px;
+  background-color: #FFA114;
+  z-index: 2;
+  border-radius: 5px;
+  left: 1760px;
+  top: 60px;
+  position:absolute;
+  justify-content: center;
+}
+
+.profile-menu-item {
+  line-height: 35px;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  cursor: pointer;
 }
 
 .main-text {
