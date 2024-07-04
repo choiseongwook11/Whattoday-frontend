@@ -25,12 +25,11 @@ const SocialLogin = () => {
       const google_user = userCred.user;
       setGoogleUser(google_user);
       sessionStorage.setItem('googlelogincheck', google_user);
-      sessionStorage.setItem('googleUserPhotoURL', google_user.photoURL);
       sessionStorage.setItem('googleUseremail', google_user.email);
 
       const idToken = await google_user.getIdToken();
       try {
-        const response = await axios.post('http://124.63.142.219:3001/login', { idToken });
+        const response = await axios.post('https://whattoday.kro.kr:3001/login', { idToken });
         console.log(response.data);
         navigate('/mainlin');
       } catch (error) {
@@ -48,12 +47,11 @@ const SocialLogin = () => {
       const github_user = userCred.user;
       setGithubUser(github_user);
       sessionStorage.setItem('githublogincheck', github_user);
-      sessionStorage.setItem('githubUserPhotoURL', github_user.photoURL);
       sessionStorage.setItem('githubUseremail', github_user.email);
 
       const idToken = await github_user.getIdToken();
       try {
-        const response = await axios.post('http://124.63.142.219:3001/login', { idToken });
+        const response = await axios.post('https://whattoday.kro.kr:3001/login', { idToken });
         console.log(response.data);
         navigate('/mainlin');
       } catch (error) {

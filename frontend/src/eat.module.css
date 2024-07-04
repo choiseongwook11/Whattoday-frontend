@@ -1,14 +1,8 @@
-/* 폰트 */
-
 @font-face {
     font-family: 'SUITE-Regular';
     src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2304-2@1.0/SUITE-Regular.woff2') format('woff2');
     font-weight: 800;
     font-style: normal;
-}
-
-.all {
-    font-family: 'Freesentation-6SemiBold', sans-serif;
 }
 
 @font-face {
@@ -37,6 +31,10 @@
     src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-7Bold.woff2') format('woff2');
     font-weight: 900;
     font-style: normal;
+}
+
+.all {
+    font-family: 'Freesentation-6SemiBold', sans-serif;
 }
 
 .click {
@@ -106,7 +104,7 @@
     align-items: center;
     display: flex;
     color: #ffffff;
-    position: relative
+    position: relative;
 }
 
 .header-right-image-box {
@@ -125,18 +123,56 @@
 
 /* section */
 
-.eat-date-cantainer {
-    background-color: #0066ff;
-    width: 800px;
-    height: 80px;
-    margin: 30px auto 0;
+.profile-menu {
+    width: 104px;
+    height: 71px;
+    background-color: #ffffff;
+    z-index: 2;
+    border-radius: 5px;
+    top: 60px;
+    right: 30px;
+    position: absolute;
+    justify-content: center;
 }
 
-.eat-date-cantainer-text {
-
+.profile-menu-item {
+    line-height: 35px;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    cursor: pointer;
 }
 
-.eat-value-cantainer{
+.eat-date-container {
+    width: 100%;
+    height: 20px;
+    font-size: 30px;
+    margin-top: 50px;
+    display: flex;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+}
+
+.angle-left {
+    margin-right: 10px;
+    font-size: 20px;
+    margin-top: 4px;
+}
+
+.angle-right {
+    margin-left: 10px;
+    font-size: 20px;
+    margin-top: 4px;
+}
+
+.eat-value {
+    white-space: pre-wrap;
+    margin-top: 50px;
+    font-size: 30px;
+}
+
+.eat-value-container {
     display: flex;
     justify-content: space-around;
     height: 700px;
@@ -144,8 +180,40 @@
 }
 
 .eat-value-box {
-    background-color: #6c6c6c;
     width: 500px;
-    height: 600px;
+    height: 550px;
     margin: 20px;
+    background-color: whitesmoke;
+    box-shadow: 0 1px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    text-align: center;
+}
+
+.eat-value-title {
+    color: black;
+    font-size: 30px;
+    margin-top: 20px;
+}
+
+.allergy {
+    margin-top: -50px;
+    width: 100%;
+    font-size: 20px;
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+}
+
+@media (max-width: 996px) {
+    .eat-value-container {
+        flex-direction: column;
+        align-items: center;
+        height: auto;
+    }
+
+    .eat-value-box {
+        width: 80%;
+        margin: 10px 0;
+    }
 }

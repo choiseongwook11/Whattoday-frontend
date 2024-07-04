@@ -6,18 +6,15 @@ import { getAuth } from 'firebase/auth';
 import axios from 'axios';
 import Select from 'react-select';
 import './MyPage.css'
-
+import ProfileModal from './ProfileModal';
 
 
 const MyPage = () => {
     const navigate = useNavigate();
 
-    const githubUserPhotoURL = sessionStorage.getItem('githubUserPhotoURL');
-    const googleUserPhotoURL = sessionStorage.getItem('googleUserPhotoURL');
-
     const [showDropdown, setShowDropdown] = useState(false);
-
-    const [profile, setProfile] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [profileImage, setProfileImage] = useState(null);
 
     const [grade, setGrade] = useState('');
     const [Class, setClass] = useState('');
@@ -30,7 +27,7 @@ const MyPage = () => {
         { value: 'F10', label: '광주광역시교육청' },
         { value: 'D10', label: '대구광역시교육청' },
         { value: 'G10', label: '대전광역시교육청' },
-        { value: 'I10', label: '경기도교육청' },
+        { value: 'J10', label: '경기도교육청' },
         { value: 'R10', label: '경상북도교육청' },
         { value: 'S10', label: '경상남도교육청' },
         { value: 'M10', label: '충청북도교육청' },
@@ -42,15 +39,14 @@ const MyPage = () => {
         { value: 'Q10', label: '전라남도교육청' },
         { value: 'C10', label: '부산광역시교육청' },
         { value: 'T10', label: '제주특별자치도교육청' },
-        { value: 'J10', label: '세종특별자치시교육청' },
+        { value: 'I10', label: '세종특별자치시교육청' },
       ]);
 
       const [selectedOffice, setSelectedOffice] = useState(null);
       const [schools, setSchools] = useState([]);
-      const [currentPage, setCurrentPage] = useState(1);
-      const [hasMore, setHasMore] = useState(true);
       const [name, setName] = useState('');
       const [selectedSchool, setSelectedSchool] = useState({ value: '', code: '' });
+      const [profile, setProfile] = useState(null);
 
 
     const handleLogout = () => {
@@ -58,6 +54,14 @@ const MyPage = () => {
       getAuth().signOut();
       navigate('/');
     };
+
+    const handleOpenModal = () => {
+        setIsModalOpen(true);
+      };
+
+    const handleSaveImage = (imagePath) => {
+        setProfileImage(imagePath);
+      };
 
     const toggleModal = () => {
       setModal(!modal);
@@ -68,65 +72,44 @@ const MyPage = () => {
         fetchSchools(selectedOffice.value, 1);
       }
     }, [selectedOffice]);
-
+    
     useEffect(() => {
       console.log("선택된 학교 상태 업데이트:", selectedSchool);
     }, [selectedSchool]);
     
     const fetchSchools = async (office, page) => {
       try {
-        const response = await axios.post('http://124.63.142.219:3001/getSchools', { office, page, limit: 100 });
+        const response = await axios.post('https://whattoday.kro.kr:3001/getSchools', { office, page, limit: 3000 });
         const formattedData = response.data.map(school => ({
           학교명: school.학교명,
           행정표준코드: school.행정표준코드
         }));
-  
+    
         if (page === 1) {
           setSchools(formattedData);
         } else {
           setSchools((prevSchools) => [...prevSchools, ...formattedData]);
         }
-        setHasMore(response.data.length === 100);
-        setCurrentPage(page + 1);
       } catch (error) {
         console.error('데이터를 가져오는 중 오류 발생:', error);
-        setHasMore(false);
-      }
-    };
-    
-    const handleMoreSchools = () => {
-      if (hasMore) {
-        fetchSchools(selectedOffice.value, currentPage);
       }
     };
     
     const handleOfficeChange = (selectedOption) => {
       setSelectedOffice(selectedOption);
       setSchools([]);
-      setCurrentPage(1);
-      setHasMore(true);
       setSelectedSchool(null);
     };
     
     const handleSchoolChange = (selectedOption) => {
-      if (selectedOption && selectedOption.value === 'more') {
-        if (!selectedOffice) {
-          alert('교육청을 선택해 주세요.');
-        } else {
-          handleMoreSchools();
-        }
-        setSelectedSchool({ value: '', code: '' });
+      const selectedSchoolData = schools.find(school => school.학교명 === selectedOption.value);
+      if (selectedSchoolData) {
+        setSelectedSchool({ value: selectedOption.value, code: selectedSchoolData.행정표준코드 });
+        console.log("선택된 학교:", selectedSchoolData); // 디버깅 용도
       } else {
-        const selectedSchoolData = schools.find(school => school.학교명 === selectedOption.value);
-        if (selectedSchoolData) {
-          setSelectedSchool({ value: selectedOption.value, code: selectedSchoolData.행정표준코드 });
-          console.log("선택된 학교:", selectedSchoolData); // 디버깅 용도
-        } else {
-          console.error("선택된 학교 데이터를 찾을 수 없습니다.");
-        }
+        console.error("선택된 학교 데이터를 찾을 수 없습니다.");
       }
     };
-    
     
     const getEmailFromSessionStorage = () => {
       const googleUserEmail = sessionStorage.getItem('googleUseremail');
@@ -147,7 +130,7 @@ const MyPage = () => {
     
     const fetchProfileData = async (email) => {
       try {
-        const response = await axios.get('http://124.63.142.219:3001/profile', {
+        const response = await axios.get('https://whattoday.kro.kr:3001/profile', {
           params: { email }
         });
         const data = response.data;
@@ -160,6 +143,7 @@ const MyPage = () => {
           setClass(data.Class); // 반 상태 업데이트
           setNum(data.num); // 번호 상태 업데이트
           setName(data.Name); // name 상태 업데이트, null 값을 빈 문자열로 대체
+          setProfileImage(data.photoURL); // photoURL 상태 업데이트
         } else {
           console.error('데이터가 없습니다:', data);
         }
@@ -169,10 +153,9 @@ const MyPage = () => {
       }
     };
     
-    
     const updateProfileData = async (email, Office, schoolName, schoolCode, grade, Class, num, name) => {
       try {
-        const response = await axios.post('http://124.63.142.219:3001/profile', {
+        const response = await axios.post('https://whattoday.kro.kr:3001/profile', {
           email, Office, schoolName, schoolCode, grade, Class, num, name
         });
         setProfile(response.data); // 업데이트된 데이터를 상태에 저장
@@ -181,7 +164,6 @@ const MyPage = () => {
         window.location.reload();
       } catch (error) {
         console.error('프로필 업데이트 중 오류 발생:', error);
-        alert('프로필 업데이트에 실패했습니다.');
       }
     };
     
@@ -220,6 +202,10 @@ const MyPage = () => {
       await fetchProfileData(email);
     };
     
+    const handleCloseModal = () => {
+      setIsModalOpen(false);
+    };
+    
     useEffect(() => {
       fetchData();
     }, []);
@@ -228,11 +214,32 @@ const MyPage = () => {
       return text && text.length >= 12 ? styles['small-font'] : '';
     };
     
-    const schoolOptions = [
-      ...schools.map((school) => ({ value: school.학교명, label: school.학교명 })),
-      ...(hasMore ? [{ value: 'more', label: '더보기...' }] : [])
-    ];
+    const schoolOptions = schools.map((school) => ({ value: school.학교명, label: school.학교명 }));
+
+    useEffect(() => {
+      const fetchProfileImage = async () => {
+        const email = getEmailFromSessionStorage();
+  
+        if (!email) {
+          console.error('Error: Email not found in session storage.');
+          return;
+        }
+  
+        try {
+          console.log(`Fetching image for email: ${email}`); // 디버깅 용도
+          const response = await axios.get(`https://whattoday.kro.kr:3001/getimg?email=${encodeURIComponent(email)}`, {
+            responseType: 'blob' // 이미지 데이터를 blob 형태로 받음
+          });
+          console.log('Response:', response); // 디버깅 용도
+          const imageUrl = URL.createObjectURL(response.data);
+          setProfileImage(imageUrl);
+        } catch (error) {
+          console.error('Error fetching profile image:', error);
+        }
+      };
     
+      fetchProfileImage();
+  }, []);
 
     return (
         <div>
@@ -251,7 +258,11 @@ const MyPage = () => {
                 <div className={styles['header-right-image-box']}>
                   <div className={styles['header-right-profile']} onClick={() => setShowDropdown(!showDropdown)}><div className={styles.click}>
                         <div className={styles['profile-box']}>
-                          <img className={styles['profile-image']} src={googleUserPhotoURL == null && githubUserPhotoURL == null ? null_image : googleUserPhotoURL || githubUserPhotoURL} alt='profile_image'></img>
+                        <img
+                            className={styles['main-profile-image']}
+                            src={profileImage}
+                            alt='profile_image'
+                        />
                         </div>
                       </div>
                     </div>
@@ -271,8 +282,13 @@ const MyPage = () => {
                       </div>
                   )}
                       <div className={styles['main-profile-box']}>
-                        <img className={styles['main-profile-image']} src={googleUserPhotoURL === null && githubUserPhotoURL === null ? null_image : googleUserPhotoURL || githubUserPhotoURL} alt='profile_image'></img>
-                      </div>
+                          <img
+                            className={styles['main-profile-image']}
+                            src={profileImage}
+                            alt='profile_image'
+                            onClick={handleOpenModal}
+                          />
+            </div>
                       <div className={styles['main-profile-name']}>
                       {profile ? (
                         <div>{profile.Name}</div>
@@ -439,6 +455,14 @@ const MyPage = () => {
                     <div className={styles['main-class-print']}>로딩 중...</div>
                   )}
                         <div className={styles['horizontal-class-line']}></div>
+                        <div className={styles['main-account']}>
+                            <div className={styles['google-acount']}>
+                                <div className={styles['google-logo']}></div>
+                            </div>
+                            <div className={styles['github-acount']}>
+                                <div className={styles['github-logo']}></div>
+                            </div>
+                        </div>
                     </div>
                       <div className={styles['bottom-button']}>
                         <div className={styles['click']}><div className={styles['apply-button']} onClick={() => navigate('/mainlin')}>확인</div></div>
@@ -446,6 +470,11 @@ const MyPage = () => {
                   </div>
                 </div>
             </section>
+            <ProfileModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSave={handleSaveImage}
+      />
         </div>
     );
 }

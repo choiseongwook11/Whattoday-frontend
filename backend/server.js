@@ -5,12 +5,11 @@ const axios = require("axios");
 const multer = require("multer");
 const path = require('path');
 const admin = require('firebase-admin');
+const fs = require('fs');
 const app = express();
 const serviceAccount = require('../frontend/admin SDK/whattoday-61d7b-firebase-adminsdk-yp10e-73ad4b3ab3.json')
 const PORT = 3001; // 포트번호 설정
-
-const gyocode = "R10";
-let schoolcode = 8750767;
+const https = require('https');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
@@ -73,10 +72,16 @@ app.use(express.json()); // JSON 형태의 요청을 파싱하도록 추가
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// 서버 연결 시 발생
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+const option = {
+  key: fs.readFileSync(__dirname + '/key.pem', 'utf-8'),
+  cert: fs.readFileSync(__dirname + '/cert.pem', 'utf-8'),
+};
+
+const server = https.createServer(option, app);
+server.listen(PORT, () => {
+  console.log(`Server running on https://localhost:${PORT}`);
 });
+
 
 app.get("/schooldata", (req, res) => {
   const email = req.query.email;
@@ -118,41 +123,159 @@ app.get("/schooldata", (req, res) => {
 
 app.get("/timetabledata", (req, res) => {
   const email = req.query.email;
-  console.log('Received email:', email);
 
   if (!email) {
     return res.status(400).send({ message: 'Email is required' });
   }
 
-  db5.query('SELECT Office, schoolCode FROM student WHERE email = ?', [email], (error, results) => {
+  db5.query('SELECT Office, schoolCode, grade, Class FROM student WHERE email = ?', [email], (error, results) => {
     if (error) {
-      console.error('Error executing query:', error);
       return res.status(500).send({ message: "Error fetching data from database" });
     }
 
     if (results.length === 0) {
-      console.log('Profile not found for email:', email);
+      return res.status(404).send({ message: 'Profile not found' });
+    }
+
+    const { Office, schoolCode, grade, Class } = results[0];
+
+    // 시작 날짜와 종료 날짜 설정
+    const startDate = new Date('2024-01-01');
+    const endDate = new Date('2024-12-31');
+
+    const fetchTimetableData = async (start, end) => {
+      const apiUrl = `https://open.neis.go.kr/hub/hisTimetable?ATPT_OFCDC_SC_CODE=${Office}&SD_SCHUL_CODE=${schoolCode}&KEY=9333296d834848e0939ca37ddad7d407&Type=json&pIndex=1&pSize=1000&TI_FROM_YMD=${start}&TI_TO_YMD=${end}&GRADE=${grade}&CLASS_NM=${Class}&DDDEP_NM=소프트웨어개발과`;
+      try {
+        const response = await axios.get(apiUrl);
+        
+        return response.data;
+      } catch (error) {
+        console.error("Error fetching data from external API:", error);
+        return null;
+      }
+    };
+
+    const promises = [];
+    let current = new Date(startDate);
+
+    // 주일 단위로 날짜 범위를 나누어 API 요청을 수행
+    while (current <= endDate) {
+      const weekStart = new Date(current);
+      // 날짜를 월요일로 설정
+      weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
+      
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+
+      const formattedStart = weekStart.toISOString().split('T')[0].replace(/-/g, '');
+      const formattedEnd = weekEnd.toISOString().split('T')[0].replace(/-/g, '');
+
+      promises.push(fetchTimetableData(formattedStart, formattedEnd));
+
+      current.setDate(current.getDate() + 7);
+    }
+
+    Promise.all(promises).then(results => {
+      const combinedData = results.filter(data => data !== null); // null 값 제거
+      const weeklyData = combinedData.map(d => {
+        if (d && d.hisTimetable && d.hisTimetable[1] && d.hisTimetable[1].row) {
+          return d.hisTimetable[1].row.map(item => {
+            return {
+              ...item,
+              ITRT_CNTNT: item.ITRT_CNTNT || 'ITRT_CNTNT not found'
+            };
+          });
+        }
+        return [];
+      });
+
+      // 주 단위로 데이터 분할
+      const weeklyResults = weeklyData.reduce((acc, weekData, index) => {
+        acc[`week${index + 1}`] = weekData;
+        return acc;
+      }, {});
+
+      res.json(weeklyResults);
+    }).catch(error => {
+      console.error("Error processing timetable data:", error);
+      res.status(500).send({ message: "Error processing timetable data" });
+    });
+  });
+});
+
+app.get("/mealdata", (req, res) => {
+  const email = req.query.email;
+  const date = req.query.date;
+
+  if (!email) {
+    return res.status(400).send({ message: 'Email is required' });
+  }
+
+  if (!date) {
+    return res.status(400).send({ message: 'Date is required' });
+  }
+
+  db5.query('SELECT Office, schoolCode FROM student WHERE email = ?', [email], (error, results) => {
+    if (error) {
+      return res.status(500).send({ message: "Error fetching data from database" });
+    }
+
+    if (results.length === 0) {
       return res.status(404).send({ message: 'Profile not found' });
     }
 
     const { Office, schoolCode } = results[0];
-    console.log('Office:', Office, 'SchoolCode:', schoolCode);
 
-    const apiUrl = `https://open.neis.go.kr/hub/hisTimetable?ATPT_OFCDC_SC_CODE=${Office}&SD_SCHUL_CODE=${schoolCode}&KEY=9333296d834848e0939ca37ddad7d407&Type=json&pIndex=1&pSize=1000&AA_FROM_YMD=20240101&AA_TO_YMD=20241231`;
-
-    axios.get(apiUrl)
-      .then(response => {
-        res.json(response.data);
-      })
-      .catch(error => {
+    const fetchMealData = async (mealCode) => {
+      const apiUrl = `https://open.neis.go.kr/hub/mealServiceDietInfo?ATPT_OFCDC_SC_CODE=${Office}&SD_SCHUL_CODE=${schoolCode}&KEY=9333296d834848e0939ca37ddad7d407&MMEAL_SC_CODE=${mealCode}&Type=json&pIndex=1&pSize=1000&MLSV_FROM_YMD=${date}&MLSV_TO_YMD=${date}`;
+      try {
+        const response = await axios.get(apiUrl);
+        return response.data;
+      } catch (error) {
         console.error("Error fetching data from external API:", error);
-        res.status(500).send({ message: "Error fetching data from external API" });
-      });
+        return null;
+      }
+    };
+
+    Promise.all([fetchMealData(1), fetchMealData(2), fetchMealData(3)]).then(([breakfastData, lunchData, dinnerData]) => {
+      const mealData = {
+        breakfast: [],
+        lunch: [],
+        dinner: []
+      };
+
+      if (breakfastData && breakfastData.mealServiceDietInfo && breakfastData.mealServiceDietInfo[1] && breakfastData.mealServiceDietInfo[1].row) {
+        mealData.breakfast = breakfastData.mealServiceDietInfo[1].row.map(item => ({
+          ...item,
+          DDISH_NM: item.DDISH_NM || 'DDISH_NM not found'
+        }));
+      }
+
+      if (lunchData && lunchData.mealServiceDietInfo && lunchData.mealServiceDietInfo[1] && lunchData.mealServiceDietInfo[1].row) {
+        mealData.lunch = lunchData.mealServiceDietInfo[1].row.map(item => ({
+          ...item,
+          DDISH_NM: item.DDISH_NM || 'DDISH_NM not found'
+        }));
+      }
+
+      if (dinnerData && dinnerData.mealServiceDietInfo && dinnerData.mealServiceDietInfo[1] && dinnerData.mealServiceDietInfo[1].row) {
+        mealData.dinner = dinnerData.mealServiceDietInfo[1].row.map(item => ({
+          ...item,
+          DDISH_NM: item.DDISH_NM || 'DDISH_NM not found'
+        }));
+      }
+
+      res.json(mealData);
+    }).catch(error => {
+      console.error("Error fetching meal data:", error);
+      res.status(500).send({ message: "Error fetching meal data" });
+    });
   });
 });
 
+
 app.post('/personal-addschedule', (req, res) => {
-  let { calendar_name, calendar_date } = req.body;
+  let { email, calendar_name, calendar_date } = req.body;
 
   // 날짜 변환
   const date = new Date(calendar_date);
@@ -161,9 +284,9 @@ app.post('/personal-addschedule', (req, res) => {
   const day = String(date.getDate()).padStart(2, '0');
   calendar_date = `${year}-${month}-${day}`; // 날짜 형식을 YYYY-MM-DD로 변환
 
-  const query = 'INSERT INTO personal (calendar_name, calendar_date) VALUES (?, ?)';
+  const query = 'INSERT INTO personal (email, calendar_name, calendar_date) VALUES (?, ?, ?)';
 
-  db.query(query, [calendar_name, calendar_date], (error, results) => {
+  db.query(query, [email, calendar_name, calendar_date], (error, results) => {
     if (error) {
       console.error('Error inserting schedule:', error);
       res.status(500).send('Server error');
@@ -174,11 +297,36 @@ app.post('/personal-addschedule', (req, res) => {
   });
 });
 
+app.post('/personal-delschedule', (req, res) => {
+  let { email, calendar_name, calendar_date } = req.body;
+
+  // 날짜 변환
+  const date = new Date(calendar_date);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  calendar_date = `${year}-${month}-${day}`; // 날짜 형식을 YYYY-MM-DD로 변환
+
+  const query = 'DELETE FROM personal WHERE email = ? AND calendar_name = ? AND calendar_date = ?';
+
+  console.log(email, calendar_name, calendar_date);
+
+  db.query(query, [email, calendar_name, calendar_date], (error, results) => {
+    if (error) {
+      console.error('Error deleting schedule:', error);
+      res.status(500).send('Server error');
+    } else {
+      console.log('Schedule deleted successfully:', results);
+      res.status(200).send('Schedule deleted successfully');
+    }
+  });
+});
 
 app.get("/personaldata", (req, res) => {
-  const query = "SELECT * FROM personaldata.personal";
+  const email = req.query.email;
+  const query = "SELECT calendar_name, calendar_date FROM personal where email = ?";
 
-  db.query(query, (err, result) => {
+  db.query(query, [email], (err, result) => {
     if (err) {
       console.error("Error executing query:", err);
       res.status(500).send("Error fetching data");
@@ -212,113 +360,268 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ storage });
+const upload = multer({ storage: storage });
+
+const storage2 = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'profileimg/');
+},
+filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+}
+});
+
+const upload2 = multer({ storage : storage2 });
 
 app.post('/upload', upload.single('file'), (req, res) => {
-  if (!req.file) {
-    console.log('No file uploaded.');
-    return res.status(400).send('No file uploaded.');
+  const { email, date } = req.body;
+  console.log('Received email:', email, 'Received date:', date);
+
+  if (!date || !email) {
+      console.error('Missing required fields:', { email, date });
+      return res.status(400).send('Missing required fields.');
   }
 
-  console.log('File uploaded:', req.file);
+  if (!req.file) {
+      console.error('No file uploaded.');
+      return res.status(400).send('No file uploaded.');
+  }
 
-  const { date } = req.body;
   const filePath = `/uploads/${req.file.filename}`;
+  console.log('File uploaded to:', filePath);
 
-  const selectQuery = 'SELECT path FROM images WHERE date = ?';
-  db2.query(selectQuery, [date], (err, results) => {
-    if (err) {
-      console.error('Database error:', err);
-      return res.status(500).send('Database error.');
-    }
+  getStudentInfo(email, (err, result) => {
+      if (err) {
+          console.error('Error fetching class and grade:', err);
+          return res.status(err.status).send(err.message);
+      }
 
-    if (results.length > 0) {
-      // 해당 날짜에 파일 경로가 이미 존재하면 업데이트
-      const updateQuery = 'UPDATE images SET path = ? WHERE date = ?';
-      db2.query(updateQuery, [filePath, date], (updateErr, updateResults) => {
-        if (updateErr) {
-          console.error('Database error:', updateErr);
-          return res.status(500).send('Database error.');
-        }
-        res.json({ message: 'Image path updated successfully.', filePath });
+      const { Class, grade, schoolCode } = result;
+      console.log('Fetched class and grade:', { Class, grade, schoolCode });
+
+      const selectQuery = 'SELECT path FROM images WHERE date = ? AND grade = ? AND Class = ? AND schoolCode = ?';
+      console.log('Executing select query:', selectQuery, [date, grade, Class, schoolCode]);
+      db2.query(selectQuery, [date, grade, Class, schoolCode], (err, results) => {
+          if (err) {
+              console.error('Database query error:', err);
+              return res.status(500).send('Database error.');
+          }
+
+          console.log('Select query results:', results);
+
+          if (results.length > 0) {
+              console.log('Updating existing image path');
+              const updateQuery = 'UPDATE images SET path = ? WHERE date = ? AND schoolCode = ? AND grade = ? AND Class = ?';
+              console.log('Update query:', updateQuery, [filePath, date, schoolCode, grade, Class]);
+
+              // Safe mode 비활성화
+              console.log('Disabling safe mode');
+              db2.query('SET SQL_SAFE_UPDATES = 0', (err) => {
+                  if (err) {
+                      console.error('Error disabling safe mode:', err);
+                      return res.status(500).send('Database error.');
+                  }
+
+                  db2.query(updateQuery, [filePath, date, schoolCode, grade, Class, email], (err, result) => {
+                      if (err) {
+                          console.error('Database update error:', err);
+                          return res.status(500).send('Database error.');
+                      }
+                      console.log('Image path updated successfully. Affected rows:', result.affectedRows);
+
+                      // Safe mode 다시 활성화
+                      console.log('Enabling safe mode');
+                      db2.query('SET SQL_SAFE_UPDATES = 1', (err) => {
+                          if (err) {
+                              console.error('Error enabling safe mode:', err);
+                              return res.status(500).send('Database error.');
+                          }
+
+                          if (result.affectedRows === 0) {
+                              console.error('No rows affected. Update failed.');
+                              return res.status(404).send('Failed to update. No matching record found.');
+                          }
+
+                          res.json({ message: 'Image path updated successfully.', filePath });
+                      });
+                  });
+              });
+          } else {
+              console.log('Inserting new image path');
+              const insertQuery = 'INSERT INTO images (date, path, grade, Class, email, schoolCode) VALUES (?, ?, ?, ?, ?, ?)';
+              console.log('Insert query:', insertQuery, [date, filePath, grade, Class, email, schoolCode]);
+
+              db2.query(insertQuery, [date, filePath, grade, Class, email, schoolCode], (err, result) => {
+                  if (err) {
+                      console.error('Database insert error:', err);
+                      return res.status(500).send('Database error.');
+                  }
+                  console.log('File uploaded and path inserted successfully. Insert ID:', result.insertId);
+                  res.json({ message: 'File uploaded successfully.', filePath });
+              });
+          }
       });
-    } else {
-      // 해당 날짜에 파일 경로가 존재하지 않으면 새로 삽입
-      const insertQuery = 'INSERT INTO images (date, path) VALUES (?, ?)';
-      db2.query(insertQuery, [date, filePath], (insertErr, insertResults) => {
-        if (insertErr) {
-          console.error('Database error:', insertErr);
-          return res.status(500).send('Database error.');
-        }
-        res.json({ message: 'File uploaded successfully.', filePath });
-      });
-    }
   });
 });
+
 
 app.get('/image', (req, res) => {
-  const { date } = req.query;
+  const { date, email } = req.query;
+  console.log('Received email:', email, 'Received date:', date);
 
-  const query = 'SELECT path FROM images WHERE date = ?';
-  db2.query(query, [date], (err, results) => {
+  if (!date || !email) {
+    console.error('Missing required fields.');
+    return res.status(400).send('Missing required fields.');
+  }
+
+  const studentSql = 'SELECT Class, grade, schoolCode FROM student WHERE email = ?';
+  db5.query(studentSql, [email], (err, studentResults) => {
+    if (err) {
+      console.error('Error fetching student info:', err);
+      return res.status(500).send({ message: 'Failed to fetch student info' });
+    } else if (studentResults.length === 0) {
+      console.error('No student info found for email:', email);
+      return res.status(404).send({ message: 'No student info found for the given email' });
+    }
+
+    const { Class, grade, schoolCode } = studentResults[0];
+    console.log('Fetched student info:', { Class, grade, schoolCode });
+
+    const selectQuery = 'SELECT path FROM images WHERE date = ? AND grade = ? AND Class = ? AND schoolCode = ?';
+    db2.query(selectQuery, [date, grade, Class, schoolCode], (err, results) => {
       if (err) {
-          console.error('Database error:', err);
-          return res.status(500).send('Database error.');
+        console.error('Database query error:', err);
+        return res.status(500).send('Database error.');
       }
+
       if (results.length > 0) {
-          res.json({ imagePath: results[0].path });
+        console.log('Image path found:', results[0].path);
+        res.json({ imagePath: results[0].path });
       } else {
-          res.status(404).send('No image found for the given date.');
+        console.error('Image not found.');
+        res.status(404).send('Image not found.');
       }
+    });
   });
 });
+
 
 // 다이어리 항목 추가
 app.post('/diary/add', (req, res) => {
-  const { date, content } = req.body;
-  const sql = 'INSERT INTO diary (date, content) VALUES (?, ?)';
-  db3.query(sql, [date, content], (err, result) => {
-    if (err) {
-      console.error('Error adding diary entry:', err);
-      res.status(500).send({ message: 'Failed to add diary entry' });
-    } else {
-      res.status(200).send({ message: 'Diary entry added successfully' });
-    }
-  });
-});
+  const { email, date, content } = req.body;
 
-app.put('/diary/update', (req, res) => {
-  const { date, content } = req.body;
-  const sql = 'UPDATE diary SET content = ? WHERE date = ?';
-  db3.query(sql, [content, date], (err, result) => {
+  if (!email || !date || !content) {
+    console.error('Missing required fields');
+    return res.status(400).send({ message: 'Email, date, and content are required' });
+  }
+
+  getStudentInfo(email, (err, studentInfo) => {
     if (err) {
-      console.error('Error updating diary entry:', err);
-      res.status(500).send({ message: 'Failed to update diary entry' });
-    } else {
-      console.log('Update result:', result); // 디버깅을 위해 결과 로그 출력
-      if (result.affectedRows === 0) {
-        res.status(404).send({ message: 'Diary entry not found' });
-      } else {
-        res.status(200).send({ message: 'Diary entry updated successfully' });
+      console.error('Error fetching student info:', err);
+      return res.status(err.status).send({ message: err.message });
+    }
+
+    const { Class, grade, schoolCode } = studentInfo;
+    const diarySql = 'INSERT INTO diary (date, content, Class, grade, email, schoolCode) VALUES (?, ?, ?, ?, ?, ?)';
+    db3.query(diarySql, [date, content, Class, grade, email, schoolCode], (err) => {
+      if (err) {
+        console.error('Error adding diary entry:', err);
+        return res.status(500).send({ message: 'Failed to add diary entry' });
       }
-    }
+      console.log('Diary entry added successfully');
+      res.status(200).send({ message: 'Diary entry added successfully' });
+    });
   });
 });
 
-app.get('/diary', (req, res) => {
-  const { date } = req.query;
-  const sql = 'SELECT content FROM diary WHERE date = ?';
-  db3.query(sql, [date], (err, results) => {
+// 다이어리 항목 업데이트
+app.put('/diary/update', (req, res) => {
+  const { email, date, content } = req.body;
+
+  if (!email || !date || !content) {
+    console.error('Missing required fields');
+    return res.status(400).send({ message: 'Email, date, and content are required' });
+  }
+
+  getStudentInfo(email, (err, studentInfo) => {
     if (err) {
-      console.error('Error fetching diary entry:', err);
-      res.status(500).send({ message: 'Failed to fetch diary entry' });
-    } else if (results.length === 0) {
-      res.status(404).send({ message: 'No diary entry found for the given date' });
-    } else {
-      res.status(200).send(results[0]);
+      console.error('Error fetching student info:', err);
+      return res.status(err.status).send({ message: err.message });
     }
+
+    const { Class, grade, schoolCode } = studentInfo;
+
+    // 먼저 해당 일지 항목이 존재하는지 확인합니다.
+    const checkDiarySql = 'SELECT * FROM diary WHERE date = ? AND Class = ? AND grade = ? AND schoolCode = ?';
+    db3.query(checkDiarySql, [date, Class, grade, schoolCode], (err, results) => {
+      if (err) {
+        console.error('Error checking diary entry:', err);
+        return res.status(500).send({ message: 'Failed to check diary entry' });
+      }
+      if (results.length === 0) {
+        console.error('Diary entry not found for date:', date, 'and email:', email);
+        return res.status(404).send({ message: 'Diary entry not found' });
+      }
+
+      // 일지 항목이 존재하면 업데이트를 진행합니다.
+      const diarySql = 'UPDATE diary SET content = ?, Class = ?, grade = ? WHERE date = ? AND email = ? AND schoolCode = ?';
+      db3.query(diarySql, [content, Class, grade, date, email, schoolCode], (err, result) => {
+        if (err) {
+          console.error('Error updating diary entry:', err);
+          return res.status(500).send({ message: 'Failed to update diary entry' });
+        }
+        console.log('Diary entry updated successfully');
+        res.status(200).send({ message: 'Diary entry updated successfully' });
+      });
+    });
   });
 });
+
+
+// 다이어리 항목 조회
+app.get('/diary', (req, res) => {
+  const { email, date } = req.query;
+
+  if (!email || !date) {
+    return res.status(400).send({ message: 'Email and date are required' });
+  }
+
+  getStudentInfo(email, (err, studentInfo) => {
+    if (err) {
+      console.error('Error fetching student info:', err);
+      return res.status(err.status).send({ message: err.message });
+    }
+
+    const { Class, grade, schoolCode } = studentInfo;
+    const diarySql = 'SELECT content FROM diary WHERE date = ? AND Class = ? AND grade = ? AND schoolCode = ?';
+    db3.query(diarySql, [date, Class, grade, schoolCode], (err, results) => {
+      if (err) {
+        console.error('Error fetching diary entry:', err);
+        return res.status(500).send({ message: 'Failed to fetch diary entry' });
+      }
+      if (results.length === 0) {
+        return res.status(404).send({ message: 'No diary entry found for the given date' });
+      }
+      res.status(200).send(results[0]);
+    });
+  });
+});
+
+const getStudentInfo = (email, callback) => {
+  const studentSql = 'SELECT * FROM student WHERE email = ?';
+  db5.query(studentSql, [email], (err, results) => {
+    if (err) {
+      console.error('Database query error:', err);
+      return callback({ status: 500, message: 'Database query error' });
+    }
+    if (results.length === 0) {
+      console.log('Student not found for email:', email);
+      return callback({ status: 404, message: 'Student not found' });
+    }
+    console.log('Student info:', results[0]);
+    callback(null, results[0]);
+  });
+};
 
 app.post('/getSchools', (req, res) => {
   const { office, page, limit } = req.body;
@@ -339,19 +642,33 @@ app.post('/getSchools', (req, res) => {
 
 app.post('/login', (req, res) => {
   const idToken = req.body.idToken;
-  
+
   admin.auth().verifyIdToken(idToken)
     .then(decodedToken => {
       const email = decodedToken.email;
       const photoURL = decodedToken.picture;
 
-      const query = 'INSERT INTO student (email, photoURL) VALUES (?, ?) ON DUPLICATE KEY UPDATE photoURL = ?';
-      db5.query(query, [email, photoURL, photoURL], (err, result) => {
+      const selectQuery = 'SELECT photoURL FROM student WHERE email = ?';
+      db5.query(selectQuery, [email], (err, results) => {
         if (err) {
-          console.error('Error inserting or updating user:', err);
+          console.error('Error querying user:', err);
           return res.status(500).send({ message: 'Internal Server Error' });
         }
-        res.send({ message: 'User logged in', email });
+
+        if (results.length > 0) {
+          // 기존 사용자가 존재하는 경우, photoURL를 업데이트하지 않습니다.
+          return res.send({ message: 'User logged in', email });
+        } else {
+          // 새로운 사용자이거나 photoURL이 없는 경우, 삽입합니다.
+          const insertQuery = 'INSERT INTO student (email, photoURL) VALUES (?, ?)';
+          db5.query(insertQuery, [email, photoURL], (err, result) => {
+            if (err) {
+              console.error('Error inserting user:', err);
+              return res.status(500).send({ message: 'Internal Server Error' });
+            }
+            res.send({ message: 'User logged in', email });
+          });
+        }
       });
     })
     .catch(error => {
@@ -359,6 +676,7 @@ app.post('/login', (req, res) => {
       res.status(401).send({ message: 'Unauthorized' });
     });
 });
+
 
 app.get('/profile', (req, res) => {
   const email = req.query.email;
@@ -410,5 +728,77 @@ app.post('/profile', (req, res) => {
   });
 });
 
+app.post('/uploadimg', upload2.single('file'), (req, res) => {
+  if (!req.file) {
+    console.log('No file uploaded.');
+    return res.status(400).send('No file uploaded.');
+  }
+
+  console.log('File uploaded:', req.file);
+
+  const email = req.headers.email; // 헤더에서 이메일 가져오기
+  if (!email) {
+    console.error('No email provided in the request.');
+    return res.status(400).send('No email provided.');
+  }
+
+  const filePath2 = `/profileimg/${req.file.filename}`;
+
+  const selectQuery = 'SELECT email FROM student WHERE email = ?';
+  db5.query(selectQuery, [email], (err, results) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).send('Database error.');
+    }
+
+    if (results.length > 0) {
+      // 이메일이 존재하면 photoURL 업데이트
+      const updateQuery = 'UPDATE student SET photoURL = ? WHERE email = ?';
+      db5.query(updateQuery, [filePath2, email], (updateErr, updateResults) => {
+        if (updateErr) {
+          console.error('Database error:', updateErr);
+          return res.status(500).send('Database error.');
+        }
+        res.json({ message: 'Photo URL updated successfully.', filePath: filePath2 });
+      });
+    } else {
+      // 이메일이 존재하지 않으면 에러 반환
+      res.status(404).send('Email not found.');
+    }
+  });
+});
+
+app.get('/getimg', (req, res) => {
+  const email = req.query.email; // 쿼리 파라미터에서 이메일 가져오기
+
+  if (!email) {
+    return res.status(400).send('Email is required.');
+  }
+
+  const selectQuery = 'SELECT photoURL FROM student WHERE email = ?';
+  db5.query(selectQuery, [email], (err, results) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).send('Database error.');
+    }
+
+    if (results.length > 0) {
+      const photoURL = results[0].photoURL;
+      const imagePath = path.join(__dirname, photoURL);
+
+      // 이미지 파일이 존재하는지 확인하고 클라이언트에 전송
+      fs.access(imagePath, fs.constants.F_OK, (fsErr) => {
+        if (fsErr) {
+          console.error('File not found:', imagePath);
+          return res.status(404).send('File not found.');
+        }
+
+        res.sendFile(imagePath);
+      });
+    } else {
+      res.status(404).send('Email not found.');
+    }
+  });
+});
 
 

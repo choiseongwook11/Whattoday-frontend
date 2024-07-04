@@ -29,6 +29,7 @@ const Calendar = () => {
     "7월", "8월", "9월", "10월", "11월", "12월"
   ];
 
+
   const processScheduleData = (data, isPersonal = false) => {
     return data.reduce((acc, curr) => {
       const dateKey = isPersonal ? curr.calendar_date : curr.AA_YMD; // 'YYYYMMDD' 형식
@@ -40,20 +41,11 @@ const Calendar = () => {
       return acc;
     }, {});
   };
-
+  
   useEffect(() => {
-    const fetchSchoolSchedules = async () => {
+    const fetchSchoolSchedules = async (email) => {
       try {
-        const googleUserEmail = sessionStorage.getItem('googleUseremail');
-        const githubUserEmail = sessionStorage.getItem('githubUseremail');
-        const email = googleUserEmail || githubUserEmail; // 어느 이메일이든 사용
-
-        if (!email) {
-          console.error("이메일이 없습니다.");
-          return;
-        }
-
-        const response = await axios.get("http://124.63.142.219:3001/schooldata", {
+        const response = await axios.get("https://whattoday.kro.kr:3001/schooldata", {
           params: { email }
         });
         const data = response.data.SchoolSchedule[1].row;
@@ -63,20 +55,54 @@ const Calendar = () => {
         console.error("일정 데이터를 불러오는데 실패했습니다.", error);
       }
     };
-
-    const fetchPersonalSchedules = async () => {
+  
+    const fetchPersonalSchedules = async (email) => {
       try {
-        const response = await axios.get("http://124.63.142.219:3001/personaldata");
+        const response = await axios.get("https://whattoday.kro.kr:3001/personaldata", {
+          params: { email }
+        });
         const schedulesByDate = processScheduleData(response.data, true);
         setPersonalSchedules(schedulesByDate);
       } catch (error) {
         console.error("개인 일정을 불러오는데 실패했습니다.", error);
       }
     };
-
-    fetchSchoolSchedules();
-    fetchPersonalSchedules();
+  
+    const fetchData = async () => {
+      const googleUserEmail = sessionStorage.getItem('googleUseremail');
+      const githubUserEmail = sessionStorage.getItem('githubUseremail');
+      const email = googleUserEmail || githubUserEmail; // 어느 이메일이든 사용
+  
+      if (!email) {
+        console.error("이메일이 없습니다.");
+        return;
+      }
+  
+      await Promise.all([
+        fetchSchoolSchedules(email),
+        fetchPersonalSchedules(email)
+      ]);
+    };
+  
+    fetchData();
   }, []);
+
+  const getEmailFromSessionStorage = () => {
+    const googleUserEmail = sessionStorage.getItem('googleUseremail');
+    const githubUserEmail = sessionStorage.getItem('githubUseremail');
+  
+    console.log('Google User Email:', googleUserEmail); // 디버깅 용도
+    console.log('GitHub User Email:', githubUserEmail); // 디버깅 용도
+  
+    if (googleUserEmail) {
+      return googleUserEmail;
+    } else if (githubUserEmail) {
+      return githubUserEmail;
+    } else {
+      console.error('오류 발생: 세션 스토리지에 이메일이 없습니다.');
+      return null;
+    }
+  };
 
   useEffect(() => {
     const today = new Date();
@@ -166,8 +192,6 @@ const Calendar = () => {
     }
   };
 
-
-  
   const handleDayClick = (day) => {
     const selectedDate = new Date(currentYear, currentMonth, day);
     setSelectedDate(selectedDate);
@@ -183,45 +207,73 @@ const Calendar = () => {
   const handleDiaryChange = (e) => {
     setDiaryContent(e.target.value);
   };
-
+  
   const onUpload = async (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-        const formData = new FormData();
-        const date = selectedDate && !isNaN(selectedDate.getTime()) ? selectedDate : new Date();
-        formData.append('file', file);
-        formData.append('date', formatDate(date, true));
-
-        try {
-            setLoading(true);
-            const response = await axios.post('http://124.63.142.219:3001/upload', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            console.log('File uploaded successfully:', response.data);
-            fetchImageForDate(date);
-        } catch (error) {
-            console.error('Error uploading file:', error);
-        } finally {
-            setLoading(false);
-        }
+    if (!file) {
+        alert('업로드할 파일을 선택해주세요.');
+        return;
     }
-  };
 
-  const fetchImageForDate = async (date) => {
+    // 파일 타입 및 크기 확인 (예: 이미지 파일만 허용하고, 최대 5MB)
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+
+    if (!allowedTypes.includes(file.type)) {
+        alert('이미지 파일만 업로드할 수 있습니다.');
+        return;
+    }
+
+    const formData = new FormData();
+    const date = selectedDate && !isNaN(selectedDate.getTime()) ? selectedDate : new Date();
+    
+    formData.append('file', file);
+    formData.append('date', formatDate(date, true));
+    
+    const email = getEmailFromSessionStorage();
+    if (!email) {
+        console.error('Email is undefined or null.');
+        alert('이메일을 확인할 수 없습니다. 다시 로그인 해주세요.');
+        return;
+    }
+    
+    formData.append('email', email);
+
+    console.log('FormData contents:', Array.from(formData.entries())); // 디버깅용 로그
+    
     try {
         setLoading(true);
-        const formattedDate = formatDate(date, true);
-        const response = await axios.get(`http://124.63.142.219:3001/image?date=${formattedDate}`);
-        setImageSrc(response.data.imagePath);
+        const response = await axios.post('https://whattoday.kro.kr:3001/upload', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+    
+        console.log('File uploaded successfully:', response.data);
+        fetchImageForDate(date, email);
     } catch (error) {
-        console.error('Error fetching image:', error);
-        setImageSrc(null);  // 이미지가 없을 경우 초기화
+        console.error('Error uploading file:', error.response ? error.response.data : error.message);
+        alert('파일 업로드 중 오류가 발생했습니다. 다시 시도해 주세요.');
     } finally {
         setLoading(false);
     }
-  };
+};
+
+
+const fetchImageForDate = async (date, email) => {
+    try {
+        const email = getEmailFromSessionStorage();
+        setLoading(true);
+        const formattedDate = formatDate(date, true);
+        const response = await axios.get(`https://whattoday.kro.kr:3001/image?date=${formattedDate}&email=${email}`);
+        setImageSrc(response.data.imagePath);
+    } catch (error) {
+        console.error('Error fetching image:', error.response ? error.response.data : error.message);
+        setImageSrc(null);
+    } finally {
+        setLoading(false);
+    }
+};
+
 
   useEffect(() => {
     if (modalOpen) {
@@ -240,27 +292,44 @@ const Calendar = () => {
 
   const saveDiaryEntry = async () => {
     const date = formatDate(selectedDate, true);
-    if (diaryEntries[date]) {
-      await updateDiaryEntry(date, diaryContent);
-    } else {
-      await addDiaryEntry(date, diaryContent);
+    const email = getEmailFromSessionStorage();
+  
+    if (!email) {
+      console.error('Email is missing');
+      return; // 이메일이 없으면 함수 종료
     }
-    setDiaryEntries({
-      ...diaryEntries,
-      [date]: diaryContent,
-    });
+  
+    try {
+      if (diaryEntries[date]) {
+        // 일기 항목이 이미 존재하면 업데이트
+        await updateDiaryEntry(date, diaryContent, email);
+      } else {
+        // 일기 항목이 존재하지 않으면 추가
+        await addDiaryEntry(date, diaryContent, email);
+      }
+  
+      // 상태 업데이트
+      updateDiaryState(date, diaryContent);
+  
+      console.log('Diary entry saved successfully');
+    } catch (error) {
+      console.error('Failed to save diary entry:', error);
+    }
   };
-
+  
   const fetchDiaryEntry = async (date) => {
     try {
-      const response = await fetch(`http://124.63.142.219:3001/diary?date=${date}`);
+      const email = getEmailFromSessionStorage();
+      if (!email) return; // 이메일이 없으면 함수 종료
+  
+      const url = `https://whattoday.kro.kr:3001/diary?date=${date}&email=${email}`;
+      console.log('Request URL:', url); // 요청 URL 로그 출력
+  
+      const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
-        setDiaryContent(data.content || '');
-        setDiaryEntries({
-          ...diaryEntries,
-          [date]: data.content || '',
-        });
+        updateDiaryState(date, data.content || '');
+        console.log('Class:', data.Class, 'Grade:', data.grade, 'schoolCode:', data.schoolCode); // Class와 Grade 로그 출력
       } else {
         console.error('No diary entry found for the given date');
         setDiaryContent('');
@@ -270,18 +339,21 @@ const Calendar = () => {
       setDiaryContent('');
     }
   };
-
-  const addDiaryEntry = async (date, content) => {
+  
+  const addDiaryEntry = async (date, content, email) => {
     try {
-      const response = await fetch('http://124.63.142.219:3001/diary/add', {
+      const response = await fetch('https://whattoday.kro.kr:3001/diary/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ date, content }),
+        body: JSON.stringify({ date, content, email }),
       });
+  
       if (response.ok) {
         console.log('Diary entry added successfully');
+        // Add가 성공한 후에 update를 호출하도록 함
+        await updateDiaryEntry(date, content, email);
       } else {
         console.error('Failed to add diary entry');
       }
@@ -289,26 +361,42 @@ const Calendar = () => {
       console.error('Error:', error);
     }
   };
-
-  const updateDiaryEntry = async (date, content) => {
+  
+  const updateDiaryEntry = async (date, content, email) => {
     try {
-      const response = await fetch('http://124.63.142.219:3001/diary/update', {
-        method: 'PUT', // 수정 요청은 PUT 메서드 사용
+      const requestBody = { date, content, email };
+      console.log('Request Body:', requestBody); // 요청 본문 로그 출력
+  
+      console.log('Before fetch call');
+      const response = await fetch('https://whattoday.kro.kr:3001/diary/update', {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ date, content }),
+        body: JSON.stringify(requestBody),
       });
+      console.log('After fetch call');
+  
+      const responseData = await response.json();
+  
       if (response.ok) {
-        console.log('Diary entry updated successfully');
+        console.log('Diary entry updated successfully:', responseData);
       } else {
-        console.error('Failed to update diary entry');
+        console.error('Failed to update diary entry:', response.statusText, responseData);
       }
     } catch (error) {
       console.error('Error:', error);
     }
   };
   
+  
+  const updateDiaryState = (date, content) => {
+    setDiaryEntries({
+      ...diaryEntries,
+      [date]: content,
+    });
+    setDiaryContent(content);
+  };  
 
   return (
     <div>
@@ -337,9 +425,9 @@ const Calendar = () => {
           </div>
         </div>
         {modalOpen && (
-          <Modal onClose={closeModal}>
+          <Modal2 onClose={closeModal}>
               <div className={styles['Diary-background']}>
-                  {imageSrc && <img width="100%" src={`http://124.63.142.219:3001${imageSrc}`} alt="Preview" className={styles.image} />}
+                  {imageSrc && <img width="100%" src={`https://whattoday.kro.kr:3001${imageSrc}`} alt="Preview" className={styles.image} />}
                   <label htmlFor="file">
                     <div className={styles["btn-upload"]}><img src={uploadIcon} alt="upload" className={styles.uploadbtnimg}></img>업로드</div>
                   </label>
@@ -361,9 +449,9 @@ const Calendar = () => {
                   onChange={handleDiaryChange}
                   placeholder="다이어리 내용을 입력하세요"
                   />
-                  <button onClick={saveDiaryEntry} className={styles.saveButton}><img src={saveIcon} alt="save" className={styles.savebtnimg}></img>저장</button>
+                  <div onClick={saveDiaryEntry} className={styles.saveButton}><img src={saveIcon} alt="save" className={styles.savebtnimg}></img>저장</div>
               </div>
-          </Modal>
+          </Modal2>
         )}
         <div className={styles.days}>
           {calendarDays}
@@ -373,11 +461,11 @@ const Calendar = () => {
   );
 }
 
-const Modal = ({ children, onClose }) => {
+const Modal2 = ({ children, onClose }) => {
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-        <button className={styles.closeButton} onClick={onClose}>X</button>
+        <div className={styles.closeButton} onClick={onClose}>X</div>
         {children}
       </div>
     </div>

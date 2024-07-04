@@ -1,15 +1,13 @@
 import { useNavigate } from 'react-router-dom';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './mainlin.module.css';
 import null_image from './asset/logo.png'
 import { getAuth } from 'firebase/auth';
+import axios from 'axios';
 
 
 function Mainlin() {
     const navigate = useNavigate();
-
-    const githubUserPhotoURL = sessionStorage.getItem('githubUserPhotoURL');
-    const googleUserPhotoURL = sessionStorage.getItem('googleUserPhotoURL');
 
     const [showDropdown, setShowDropdown] = useState(false);
 
@@ -18,6 +16,49 @@ function Mainlin() {
       getAuth().signOut();
       navigate('/');
     };
+
+    const getEmailFromSessionStorage = () => {
+        const googleUserEmail = sessionStorage.getItem('googleUseremail');
+        const githubUserEmail = sessionStorage.getItem('githubUseremail');
+      
+        console.log('Google User Email:', googleUserEmail); // 디버깅 용도
+        console.log('GitHub User Email:', githubUserEmail); // 디버깅 용도
+      
+        if (googleUserEmail) {
+          return googleUserEmail;
+        } else if (githubUserEmail) {
+          return githubUserEmail;
+        } else {
+          console.error('오류 발생: 세션 스토리지에 이메일이 없습니다.');
+          return null;
+        }
+      };
+      
+
+      const [imageUrl, setImageUrl] = useState(null);
+
+      useEffect(() => {
+        const fetchImage = async () => {
+          const email = getEmailFromSessionStorage();
+    
+          if (email) {
+            try {
+              const response = await axios.get('https://whattoday.kro.kr:3001/getimg', {
+                params: { email },
+                responseType: 'blob',
+              });
+    
+              const imageObjectURL = URL.createObjectURL(response.data);
+              setImageUrl(imageObjectURL);
+            } catch (error) {
+              console.error('Error fetching the image:', error);
+              setImageUrl(null_image);
+            }
+          }
+        };
+    
+        fetchImage();
+      }, []);
     
     return (
         <div>
@@ -33,7 +74,11 @@ function Mainlin() {
                   <div className={styles['header-right-image-box']}>
                     <div className={styles['header-right-profile']} onClick={() => setShowDropdown(!showDropdown)}><div className={styles.click}>
                           <div className={styles['profile-box']}>
-                            <img className={styles['profile-image']} src={googleUserPhotoURL == null && githubUserPhotoURL == null ? null_image : googleUserPhotoURL || githubUserPhotoURL} alt='profile_image'></img>
+                            <img
+                            className={styles['profile-image']}
+                            src={imageUrl || null_image}
+                            alt='profile_image'
+                            />
                           </div>
                         </div>
                       </div>
@@ -78,7 +123,7 @@ function Mainlin() {
                                 </div>
                             </div>
                         </li>
-                        <li className={styles['li-class']}>
+                        <li className={styles['li-class']} onClick={() => navigate("/Schedule")}>
                             <div className={styles['li-class-text-box']}>
                                 <div className={styles['li-class-title']}>
                                     시간표
@@ -88,7 +133,7 @@ function Mainlin() {
                                 </div>
                             </div>
                         </li>
-                        <li className={styles['li-eat']}>
+                        <li className={styles['li-eat']} onClick={() => navigate("/Eat")}>
                             <div className={styles['li-eat-text-box']}>
                                 <div className={styles['li-eat-title']}>
                                     급식표

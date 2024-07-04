@@ -204,33 +204,14 @@ transform: translate(0, -2px);
   height: 44px;
 }
 
-.cal-school-schedule-text {
-  font-family: 'Freesentation-3light', sans-serif;
-  font-size: 25px;
-  position: relative;
-  top: 68px;
-  left: 33px;
-  width: 74px;
-  height: 24px;
-}
-
 .cal-personal-schedule-text {
   font-family: 'Freesentation-3light', sans-serif;
   font-size: 25px;
   position: relative;
-  top: 164px;
+  top: 80px;
   left: 33px;
   width: 74px;
   height: 24px;
-}
-
-.cal-school-schedule-bar {
-  background-color: #7F7F7F;
-  width: 354.5px;
-  height: 1px;
-  position: relative;
-  top: 73px;
-  left: 33px;
 }
 
 .cal-personal-schedule-bar {
@@ -238,56 +219,35 @@ transform: translate(0, -2px);
   width: 354.5px;
   height: 1px;
   position: relative;
-  top: 169px;
+  top: 90px;
   left: 33px;
 }
 
-.cal-school-schedule {
+.personal-schedule-container {
+  width: 100%;
+  position: relative;
+}
+
+.schedule-wrapper {
+  position: relative;
+  top: 120px;
+  left: 33px;
+}
+
+.personal-btn {
+  display: flex;
+  position: absolute;
+  left: 320px;
+  top: 120px;
+}
+
+.cal-personal-schedule {
   width: 340px;
   height: 111px;
   border-radius: 20px;
-  background-color:  #FAFAFA;
+  background-color: #FAFAFA;
   position: relative;
-  top: 88px;
-  left: 40px;
-}
-
-.cal-school-schedule2 {
-  width: 340px;
-  height: 111px;
-  border-radius: 20px;
-  background-color:  #FAFAFA;
-  position: relative;
-  top: 112px;
-  left: 40px;
-}
-
-.cal-school-schedule3 {
-  width: 340px;
-  height: 111px;
-  border-radius: 20px;
-  background-color:  #FAFAFA;
-  position: relative;
-  top: 136px;
-  left: 40px;
-}
-
-.cal-school-schedule-date {
-  font-family: 'Freesentation-3light', sans-serif;
-  font-size: 24px;
-  position: relative;
-  color: #494949;
-  top: 22px;
-  left: 24px;
-}
-
-.cal-school-schedule-name {
-  font-family: 'Freesentation-3light', sans-serif;
-  font-size: 24px;
-  position: relative;
-  color: #494949;
-  top: 27px;
-  left: 24px;
+  margin-bottom: 20px;
 }
 
 .cal-personal-schedule-date {
@@ -308,25 +268,15 @@ transform: translate(0, -2px);
   left: 24px;
 }
 
-.cal-personal-schedule {
-  width: 340px;
-  height: 111px;
-  border-radius: 20px;
-  background-color:  #FAFAFA;
-  position: relative;
-  top: 184px;
-  left: 40px;
+
+.left-button, .right-button {
+  cursor: pointer;
 }
 
-.cal-personal-schedule2 {
-  width: 340px;
-  height: 111px;
-  border-radius: 20px;
-  background-color:  #FAFAFA;
-  position: relative;
-  top: 208px;
-  left: 40px;
+.left-button {
+  margin-right: 20px;
 }
+
 
 .cal-add-button {
   font-family: 'Freesentation-5medium', sans-serif;
@@ -639,6 +589,9 @@ transform: translate(0, -2px);
   border-radius: 30px;
   border: none;
   background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   outline: none;
   position: absolute;
   left: 93px;
@@ -652,6 +605,9 @@ transform: translate(0, -2px);
   border-radius: 30px;
   border: none;
   background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   outline: none;
   position: absolute;
   left: 267px;
@@ -688,25 +644,29 @@ transform: translate(0, -2px);
   box-sizing: border-box;
 }
 
+.calenderWrapper {
+  background-color: #f1f1f1; /* 배경색 */
+}
+
 .customHeaderContainer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #000000; /* colors.$BG_COLOR */
+  background-color: #E3E7FF; /* 배경색 유지 */
   height: 100%;
   margin-top: 8px;
-  padding: 0 12px 0 24px;
+  padding: 0 24px 0 24px;
 }
 
 .customHeaderContainer .month {
-  color: #ffffff;
+  color: black; /* 텍스트 색상 */
   font-size: 16px;
   font-family: 'Freesentation-5Medium', sans-serif;
 }
 
 .customHeaderContainer .year {
-  background-color: #000000;
-  color: #fff;
+  background-color: #E3E7FF; /* 배경색 유지 */
+  color: black; /* 텍스트 색상 */
   border: none;
   font-size: 16px;
   padding-right: 5px;
@@ -714,19 +674,35 @@ transform: translate(0, -2px);
   font-family: 'Freesentation-5Medium', sans-serif;
 }
 
-.customHeaderContainer .monthButton {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background-color: #000000;
-}
-
 .customHeaderContainer .monthButton + .monthButton {
   margin-left: 24px;
+  border-radius: 50%;
 }
 
-.calenderWrapper {
-  background-color: #000000;
+.selectedDay,
+.unselectedDay {
+  color: #000000; /* 텍스트 색상을 검은색으로 */
+  font-family: 'Freesentation-5Medium', sans-serif;
+  font-size: 20px;
+  padding: 3px 1px 0 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+.selectedDay {
+  background-color: #4260FF; /* 주어진 색상 */
+  border-radius: 50%;
+}
+
+.selectedDay:hover {
+  background-color: #3249CC; /* 호버 시 주어진 색상의 어두운 버전 */
+  border-radius: 50%;
+}
+
+.unselectedDay:hover {
+  border-radius: 50%;
+  background-color: rgba(66, 96, 255, 0.2); /* 주어진 색상의 투명도 적용 버전 */
 }
 
 .Diary-date-modal {
@@ -801,7 +777,6 @@ transform: translate(0, -2px);
 
 .savebtnimg {
   position: relative;
-  top: 3px;
   width: 20px;
   height: 20px;
 }
@@ -840,6 +815,9 @@ transform: translate(0, -2px);
   font-size: 20px;
   color: #FFFFFF;
   border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
   border: none;
 }
@@ -852,7 +830,7 @@ transform: translate(0, -2px);
 .closeButton {
   position: absolute;
   top: 10px;
-  right: 10px;
+  right: 20px;
   background: none;
   border: none;
   font-size: 20px;
@@ -863,6 +841,153 @@ body.active-modal {
   overflow-y: hidden;
 }
 
+.datebtn {
+  display: flex;
+}
 
+.personaldelmodal {
+  width: 300px;
+  height: 250px;
+  background-color: #f1f1f1;
+  border-radius: 30px;
+  text-align: center;
+  font-family: 'Freesentation-5Medium', sans-serif;
+  padding: 20px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  outline: none;
+}
 
+.personaldelmodal-title {
+  font-size: 24px;
+}
 
+.personaldelmodal-really {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+}
+
+.personaldelmodal-btn {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.personaldelmodal-btn-left {
+  margin-right: 10px;
+  padding: 10px 20px;
+  background-color: #4260FF;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.personaldelmodal-btn-left:hover {
+  background-color: #ff1a1a;
+}
+
+.personaldelmodal-btn-right {
+  padding: 10px 20px;
+  background-color: #4260FF;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+input[id = "menuicon"] {
+  display:none;
+}
+
+input[id="menuicon"] + label {
+  display: block;
+  width: 30px; /* 너비를 줄임 */
+  height: 20px; /* 높이를 줄임 */
+  position: relative;
+  cursor: pointer;
+  left: 1460px;
+  top: 525px;
+  z-index: 2;
+}
+
+input[id="menuicon"] + label span {
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 2px; /* span 요소의 높이를 줄임 */
+  border-radius: 30px;
+  background: #000;
+  transition: all .35s;
+}
+
+input[id="menuicon"] + label span:nth-child(1) {
+  top: 0;
+}
+
+input[id="menuicon"] + label span:nth-child(2) {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+input[id="menuicon"] + label span:nth-child(3) {
+  bottom: 0;
+}
+
+input[id="menuicon"]:checked + label span:nth-child(1) {
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+input[id="menuicon"]:checked + label span:nth-child(2) {
+  opacity: 0;
+}
+
+input[id="menuicon"]:checked + label span:nth-child(3) {
+  bottom: 50%;
+  transform: translateY(50%) rotate(-45deg);
+}
+
+.sidebar {
+  width: 400px;
+  height: 300px;
+  background-color: #fff;
+  position: absolute;
+  top: 500px;
+  right: -400px;
+  z-index: 1;
+  transition: all .35s;
+}
+
+input[id="menuicon"]:checked + label + div {
+  right: 0;
+}
+
+.weather {
+  display: block; /* span을 block 요소로 변경 */
+  white-space: pre-line; /* 공백과 줄 바꿈을 유지 */
+}
+
+.weatherdiv {
+  font-family: 'Freesentation-5medium', sans-serif;
+  text-align: center;
+  font-size: 30px;
+  margin-top: 50px;
+}
+
+.weatherIcon {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+body {
+  overflow-x: hidden;
+}
