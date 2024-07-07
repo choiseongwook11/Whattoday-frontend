@@ -1,6 +1,6 @@
 # 배포 링크
 
-whattoday.kro.kr:443 입니다.
+https://whattoday-deploy-frontend.vercel.app/ 입니다.
 
 # 배포 이후 업데이트
 
