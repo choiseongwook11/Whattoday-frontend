@@ -1,6 +1,7 @@
 # 배포 링크
 
-https://whattoday.kro.kr/ 입니다.
+https://whattoday.kro.kr/ 
+https://web-whattoday-ly7hfh5b552425a2.sel5.cloudtype.app/ 입니다.
 
 
 https://github.com/hyunwoo612/whattoday-deploy-frontend 프론트 배포 깃헙 링크
