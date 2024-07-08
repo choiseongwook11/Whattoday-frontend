@@ -19,3 +19,7 @@ https://github.com/hyunwoo612/whattoday-deploy-backend 백엔드 배포 깃헙 �
 2024년 7월 2일 오후 4시 8분 : 급식표 기능 완성
 
 2024년 7월 2일 오후 6시 25분 : 캘린더 기능 99.5% 완성
+
+
+![image](https://github.com/hyunwoo612/Whattoday/assets/127296530/7f31cd93-5b31-482e-bd3f-7991c9e0eb69)
+
