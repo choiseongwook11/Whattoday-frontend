@@ -22,6 +22,7 @@ https://github.com/hyunwoo612/whattoday-deploy-backend 백엔드 배포 깃헙 �
 
 2024년 7월 2일 오후 6시 25분 : 캘린더 기능 99.5% 완성
 
+2024년 7얼 9일 오전 2시 22분 : 학과 제외 모든기능 완성
 
 
 ![image](https://github.com/hyunwoo612/Whattoday/assets/127296530/1523bb10-5801-4fc8-9243-ab923ea530d4)
