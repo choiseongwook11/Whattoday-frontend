@@ -1,6 +1,8 @@
 # 배포 링크
 
 https://whattoday-deploy-frontend.vercel.app/ 입니다.
+whattoday.kro.kr
+
 
 https://github.com/hyunwoo612/whattoday-deploy-frontend 프론트 배포 깃헙 링크
 
