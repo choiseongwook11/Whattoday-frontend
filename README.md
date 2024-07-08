@@ -26,10 +26,5 @@ https://github.com/hyunwoo612/whattoday-deploy-backend 백엔드 배포 깃헙 �
 
 
 
-![image](https://github.com/hyunwoo612/Whattoday/assets/127296530/e3c066e7-3270-403e-9a9d-34f96c06ba3c)
 
-
-
-![image](https://github.com/hyunwoo612/Whattoday/assets/127296530/53591f83-6cae-4469-88eb-816e49c589f3)
-
-
+![image](https://github.com/hyunwoo612/Whattoday/assets/127296530/8ad7024b-f127-40ba-864d-f162ec4fd000)
